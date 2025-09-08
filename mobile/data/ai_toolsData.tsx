@@ -144,9 +144,12 @@ export const aiToolsData: AITool[] = [
   }
 ];
 
+// ... existing code ...
+
 export const categories = [
   { id: 'all', name: 'All', icon: '🤖', count: aiToolsData.length },
   { id: 'trending', name: 'Trending', icon: '🔥', count: aiToolsData.filter(tool => tool.isTrending).length },
+  { id: 'highest_rated', name: 'Highest Rated', icon: '⭐', count: aiToolsData.filter(tool => tool.rating >= 4.5).length },
   { id: 'conversational', name: 'Conversational AI', icon: '💬', count: aiToolsData.filter(tool => tool.category === 'Conversational AI').length },
   { id: 'image', name: 'Image Generation', icon: '🎨', count: aiToolsData.filter(tool => tool.category === 'Image Generation').length },
   { id: 'development', name: 'Development', icon: '👨‍💻', count: aiToolsData.filter(tool => tool.category === 'Development').length },
@@ -154,6 +157,8 @@ export const categories = [
   { id: 'video', name: 'Video Generation', icon: '🎬', count: aiToolsData.filter(tool => tool.category === 'Video Generation').length },
   { id: 'productivity', name: 'Productivity', icon: '⚡', count: aiToolsData.filter(tool => tool.category === 'Productivity').length },
 ];
+
+
 
 export const pricingFilters = [
   { id: 'all', name: 'All Pricing', icon: '💰' },

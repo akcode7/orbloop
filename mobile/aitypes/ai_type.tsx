@@ -7,7 +7,7 @@ export interface AITool {
   category: string;
   subcategory?: string;
   pricing?: 'Free' | 'Freemium' | 'Paid' | 'Open Source';
-  rating?: number;
+  rating: number;
   isOpenSource?: boolean;
   isTrending?: boolean;
   tags?: string[];

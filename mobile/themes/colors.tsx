@@ -1,5 +1,9 @@
-// themes/colors.ts
+// themes/colors.tsx
 import { useColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useEffect, useContext, createContext, ReactNode } from 'react';
+
+export type ThemeMode = 'light' | 'dark' | 'system';
 
 export interface ThemeColors {
   background: string;
@@ -61,12 +65,97 @@ const darkTheme: ThemeColors = {
   bottomNavBackground: '#1a1a1a',
 };
 
+interface ThemeContextType {
+  theme: ThemeColors;
+  themeMode: ThemeMode;
+  setThemeMode: (mode: ThemeMode) => void;
+  isDarkMode: boolean;
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+const THEME_STORAGE_KEY = '@theme_mode';
+
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const systemColorScheme = useColorScheme();
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
+
+  useEffect(() => {
+    loadThemeMode();
+  }, []);
+
+  const loadThemeMode = async () => {
+    try {
+      const savedMode = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+      if (savedMode) {
+        setThemeModeState(savedMode as ThemeMode);
+      }
+    } catch (error) {
+      console.error('Error loading theme mode:', error);
+    }
+  };
+
+  const setThemeMode = async (mode: ThemeMode) => {
+    try {
+      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
+      setThemeModeState(mode);
+    } catch (error) {
+      console.error('Error saving theme mode:', error);
+    }
+  };
+
+  const getEffectiveTheme = (): ThemeColors => {
+    if (themeMode === 'system') {
+      return systemColorScheme === 'dark' ? darkTheme : lightTheme;
+    }
+    return themeMode === 'dark' ? darkTheme : lightTheme;
+  };
+
+  const isDarkMode = themeMode === 'system' 
+    ? systemColorScheme === 'dark' 
+    : themeMode === 'dark';
+
+  return (
+    <ThemeContext.Provider 
+      value={{
+        theme: getEffectiveTheme(),
+        themeMode,
+        setThemeMode,
+        isDarkMode,
+      }}
+    >
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export const useThemeContext = (): ThemeContextType => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useThemeContext must be used within a ThemeProvider');
+  }
+  return context;
+};
+
+// Main theme hooks - use context when available, fallback to system theme
 export const useTheme = (): ThemeColors => {
+  const context = useContext(ThemeContext);
+  if (context) {
+    return context.theme;
+  }
+  // Fallback for components not wrapped in ThemeProvider
   const colorScheme = useColorScheme();
   return colorScheme === 'dark' ? darkTheme : lightTheme;
 };
 
 export const useIsDarkMode = (): boolean => {
+  const context = useContext(ThemeContext);
+  if (context) {
+    return context.isDarkMode;
+  }
+  // Fallback for components not wrapped in ThemeProvider
   const colorScheme = useColorScheme();
   return colorScheme === 'dark';
 };
+
+export default ThemeProvider;

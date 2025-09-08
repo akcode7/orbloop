@@ -59,10 +59,12 @@ const AIListingScreen: React.FC = () => {
       filtered = filtered.filter(tool => tool.isTrending);
     }
 
-    // Apply category filter
+       // Apply category filter
     if (selectedCategory !== 'all') {
       if (selectedCategory === 'trending') {
         filtered = filtered.filter(tool => tool.isTrending);
+      } else if (selectedCategory === 'highest_rated') {
+        filtered = filtered.filter(tool => tool.rating >= 4.5);
       } else {
         const categoryMap: { [key: string]: string } = {
           'conversational': 'Conversational AI',
@@ -78,6 +80,7 @@ const AIListingScreen: React.FC = () => {
         }
       }
     }
+
 
     // Apply pricing filter
     if (selectedPricing !== 'all') {
@@ -188,12 +191,13 @@ const AIListingScreen: React.FC = () => {
     </View>
   );
 
-  // Get current filter display
+    // Get current filter display
   const getFilterDisplay = () => {
     const filters = [];
     if (showTrending) filters.push('Trending');
     if (selectedCategory !== 'all') {
       const categoryName = selectedCategory === 'trending' ? 'Trending' : 
+        selectedCategory === 'highest_rated' ? 'Highest Rated' :
         selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
       filters.push(categoryName);
     }
@@ -202,6 +206,7 @@ const AIListingScreen: React.FC = () => {
     }
     return filters.length > 0 ? filters.join(', ') : 'All Tools';
   };
+
 
   if (showDetailScreen && selectedAI) {
     return (
