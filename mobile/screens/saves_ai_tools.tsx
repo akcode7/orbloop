@@ -11,7 +11,8 @@ import {
   Alert,
   StatusBar,
   TextInput,
-  useColorScheme
+  useColorScheme,
+  Share
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AITool } from '../aitypes/ai_type';
@@ -20,9 +21,13 @@ import AICard from '../components/aicard';
 import Button from '../components/buttons';
 import FilterButton from '../components/filterbtn';
 import CategoryModal from '../components/category_modal';
+import SortModal, { SortOption } from '../components/SortModal';
 import { useTheme, useIsDarkMode } from '../themes/colors';
 
 const { width } = Dimensions.get('window');
+
+// Calculate card width for 3-column grid layout
+const cardWidth = (width - 60) / 3; // Following the memory pattern for 3-item layout
 
 interface SavedAIToolsScreenProps {
   onBack?: () => void;
@@ -72,7 +77,22 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
       isOpenSource: true,
       isTrending: false,
       tags: ['Open Source', 'ML', 'Models']
+    },
+    {
+      id: '11',
+      name: 'Hugging Face',
+      description: 'Open-source platform for machine learning models and datasets.',
+      image: 'https://via.placeholder.com/100x100/FF9500/FFFFFF?text=HF',
+      externalUrl: 'https://huggingface.co',
+      category: 'Development',
+      subcategory: 'ML Platform',
+      pricing: 'Open Source',
+      rating: 4.7,
+      isOpenSource: true,
+      isTrending: false,
+      tags: ['Open Source', 'ML', 'Models']
     }
+
   ]);
 
   const [selectedAI, setSelectedAI] = useState<AITool | null>(null);
@@ -81,15 +101,17 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedPricing, setSelectedPricing] = useState('all');
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [sortBy, setSortBy] = useState<'name' | 'rating' | 'category' | 'dateAdded'>('dateAdded');
+   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [viewLayout, setViewLayout] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<SortOption>('dateAdded');
+  const [showSortModal, setShowSortModal] = useState(false);
 
   const theme = useTheme();
   const isDarkMode = useIsDarkMode();
-  const styles = createStyles(theme);
+  const styles = createStyles(theme, isDarkMode);
 
   // Filter and search logic for saved tools
-  const filteredData = useMemo(() => {
+ const filteredData = useMemo(() => {
     let filtered = [...savedAITools];
 
     // Apply search filter
@@ -104,7 +126,7 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
     // Apply category filter
     if (selectedCategory !== 'all') {
       if (selectedCategory === 'highest_rated') {
-        filtered = filtered.filter(tool => tool.rating >= 4.5);
+        filtered = filtered.filter(tool => tool.rating && tool.rating >= 4.5);
       } else {
         const categoryMap: { [key: string]: string } = {
           'conversational': 'Conversational AI',
@@ -138,23 +160,33 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
       }
     }
 
-    // Apply sorting
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'rating':
-          return b.rating - a.rating;
-        case 'category':
-          return a.category.localeCompare(b.category);
-        case 'dateAdded':
-        default:
-          return 0; // In a real app, this would sort by actual date added
-      }
-    });
+     // Apply sorting
+    if (selectedCategory === 'highest_rated') {
+      filtered = filtered.filter(tool => tool.rating && tool.rating >= 4.5)
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else {
+      // Apply other sorting
+      filtered.sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return a.name.localeCompare(b.name);
+          case 'rating':
+            return (b.rating || 0) - (a.rating || 0);
+          case 'category':
+            return a.category.localeCompare(b.category);
+          case 'trending':
+            if (a.isTrending && !b.isTrending) return -1;
+            if (!a.isTrending && b.isTrending) return 1;
+            return (b.rating || 0) - (a.rating || 0); // Secondary sort by rating
+          case 'dateAdded':
+          default:
+            return parseInt(b.id) - parseInt(a.id); // Newest first
+        }
+      });
+    }
 
     return filtered;
-  }, [savedAITools, searchText, selectedCategory, selectedPricing, sortBy]);
+  }, [searchText, selectedCategory, selectedPricing, sortBy, savedAITools]);
 
   // Handler functions
   const handleCardPress = (aiTool: AITool) => {
@@ -215,6 +247,44 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
     );
   };
 
+  const handleSortPress = () => {
+    setShowSortModal(true);
+  };
+
+ 
+   const handleSelectSort = (sortOption: SortOption) => {
+    setSortBy(sortOption);
+  };
+
+  const handleShareTool = async (item: AITool) => {
+    try {
+      const shareMessage = `🤖 Check out ${item.name}! 
+
+${item.description}
+
+⭐ Rating: ${item.rating}/5
+🔗 Link: ${item.externalUrl}
+
+🚀 Discover this and 100+ other amazing AI tools on OrbLoop - Everything AI!
+
+Choose from our curated collection of the best AI tools for productivity, creativity, development, and more. Download now and explore the future of AI! `;
+
+      const result = await Share.share({
+        message: shareMessage,
+        url: item.externalUrl,
+        title: `${item.name} - AI Tool from OrbLoop`,
+      });
+
+      if (result.action === Share.sharedAction) {
+        console.log('Tool shared successfully:', item.name);
+      }
+    } catch (error) {
+      console.error('Error sharing tool:', error);
+      Alert.alert('Share Error', 'Unable to share this AI tool. Please try again.');
+    }
+  };
+
+
   const handleCategoryPress = () => {
     setShowCategoryModal(true);
   };
@@ -250,27 +320,32 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
     );
   };
 
-  const renderAICard = ({ item }: { item: AITool }) => (
-    <View style={styles.cardContainer}>
+ const renderAICard = ({ item }: { item: AITool }) => (
+    <View style={[
+      styles.cardContainer,
+      viewLayout === 'grid' && { width: cardWidth }
+    ]}>
       <AICard
         aiTool={item}
         onPress={() => handleCardPress(item)}
         onSave={() => handleRemoveFromSaved(item)}
+        onShare={() => handleShareTool(item)}
         isSaved={true}
+        layout={viewLayout}
       />
-      {item.isTrending && (
-        <View style={styles.trendingBadge}>
-          <Text style={styles.trendingText}>🔥 Trending</Text>
-        </View>
-      )}
       {item.isOpenSource && (
         <View style={styles.openSourceBadge}>
           <Text style={styles.openSourceText}>🔓 Open Source</Text>
         </View>
       )}
-      <View style={styles.ratingContainer}>
-        <Text style={styles.ratingText}>⭐ {item.rating}</Text>
-      </View>
+      {item.isTrending && (
+        <View style={[
+          styles.trendingBadge,
+          item.isOpenSource && { top: 40 } // Stack below open source badge if both present
+        ]}>
+          <Text style={styles.trendingText}>🔥 Trending</Text>
+        </View>
+      )}
     </View>
   );
 
@@ -365,12 +440,7 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
           />
           <TouchableOpacity 
             style={[styles.sortButton, sortBy !== 'dateAdded' && styles.sortButtonActive]}
-            onPress={() => {
-              const sortOptions: Array<typeof sortBy> = ['dateAdded', 'name', 'rating', 'category'];
-              const currentIndex = sortOptions.indexOf(sortBy);
-              const nextIndex = (currentIndex + 1) % sortOptions.length;
-              setSortBy(sortOptions[nextIndex]);
-            }}
+            onPress={handleSortPress}
           >
             <Text style={styles.sortIcon}>{getSortIcon()}</Text>
             <Text style={styles.sortText}>Sort</Text>
@@ -420,13 +490,14 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
           </Text>
         </View>
       ) : (
-        <FlatList
+          <FlatList
           data={filteredData}
           renderItem={renderAICard}
           keyExtractor={(item) => item.id}
-          numColumns={2}
+          numColumns={viewLayout === 'list' ? 1 : 3}
+          key={viewLayout} // Force re-render when layout changes
           contentContainerStyle={styles.listContainer}
-          columnWrapperStyle={styles.row}
+          columnWrapperStyle={viewLayout === 'list' ? undefined : styles.row}
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -481,11 +552,19 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
         onSelectCategory={handleSelectCategory}
         onSelectPricing={handleSelectPricing}
       />
+
+       {/* Sort Modal */}
+      <SortModal
+        visible={showSortModal}
+        onClose={() => setShowSortModal(false)}
+        selectedSort={sortBy}
+        onSelectSort={handleSelectSort}
+      />
     </SafeAreaView>
   );
 };
 
-const createStyles = (theme: any) => StyleSheet.create({
+const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.background,
@@ -504,13 +583,13 @@ const createStyles = (theme: any) => StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.filterButtonBackground,
+    backgroundColor: isDarkMode ? '#00ff88' : theme.filterButtonBackground,
     alignItems: 'center',
     justifyContent: 'center',
   },
   backArrow: {
     fontSize: 18,
-    color: theme.text,
+    color: isDarkMode ? '#000000' : theme.text,
     fontWeight: 'bold',
   },
   headerTitle: {
@@ -528,6 +607,94 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.error,
     fontSize: 12,
     fontWeight: '600',
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: theme.filterButtonBackground,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+ sortButtonActive: {
+    backgroundColor: isDarkMode ? '#00ff88' : theme.primary + '20',
+    borderColor: isDarkMode ? '#00ff88' : theme.primary,
+  },
+  layoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: theme.filterButtonBackground,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  filterButton: {
+    backgroundColor: theme.categoryTabInactive,
+    borderColor: theme.border,
+  },
+  filterButtonText: {
+    color: theme.text,
+  },
+  selectedCategoryItem: {
+    backgroundColor: theme.selected,
+    borderColor: theme.primary,
+    borderWidth: 2,
+  },
+  modalButtonText: {
+    color: theme.primary,
+  },
+trendingBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#ff4757',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    zIndex: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  trendingText: {
+    fontSize: 10,
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  openSourceBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#2ed573',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    zIndex: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  openSourceText: {
+    fontSize: 10,
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  ratingContainer: {
+    backgroundColor: theme.ratingBackground,
+  },
+  ratingText: {
+    color: theme.textOnPrimary,
+  },
+  clearAllButton: {
+    backgroundColor: theme.borderLight,
   },
   statsSection: {
     flexDirection: 'row',
@@ -582,20 +749,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  sortButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: theme.filterButtonBackground,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-  sortButtonActive: {
-    backgroundColor: theme.primary + '20',
-    borderColor: theme.primary,
-  },
   sortIcon: {
     fontSize: 14,
     marginRight: 5,
@@ -623,10 +776,12 @@ const createStyles = (theme: any) => StyleSheet.create({
   clearFiltersButton: {
     paddingVertical: 4,
     paddingHorizontal: 8,
+    backgroundColor: isDarkMode ? '#00ff88' : 'transparent',
+    borderRadius: 6,
   },
   clearFiltersText: {
     fontSize: 12,
-    color: theme.primary,
+    color: isDarkMode ? '#000000' : theme.primary,
     fontWeight: '600',
   },
   listContainer: {
@@ -635,60 +790,16 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   row: {
     justifyContent: 'space-between',
-  },
-  cardContainer: {
-    position: 'relative',
-  },
-  trendingBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: 'rgba(255, 107, 107, 0.9)',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    zIndex: 1,
-  },
-  trendingText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  openSourceBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(40, 167, 69, 0.9)',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    zIndex: 1,
-  },
-  openSourceText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  ratingContainer: {
-    position: 'absolute',
-    bottom: 70,
-    right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    zIndex: 1,
-  },
-  ratingText: {
-    color: 'white',
-    fontSize: 11,
-    fontWeight: 'bold',
+    marginBottom: 10,
   },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 40,
+  },
+  cardContainer: {
+    position: 'relative',
   },
   emptyIcon: {
     fontSize: 64,
@@ -741,7 +852,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: theme.border,
+    backgroundColor: isDarkMode ? '#333333' : theme.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -760,7 +871,8 @@ const createStyles = (theme: any) => StyleSheet.create({
     gap: 10,
   },
   modalButton: {
-    flex: 1,
+    backgroundColor: theme.surface,
+    borderColor: theme.border,
   },
 });
 

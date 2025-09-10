@@ -1,4 +1,3 @@
-// components/Button.tsx
 import React from 'react';
 import {
   TouchableOpacity,
@@ -7,7 +6,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { useTheme } from '../themes/colors';
+import { useTheme, useIsDarkMode } from '../themes/colors';
 
 interface ButtonProps {
   title: string;
@@ -31,7 +30,8 @@ const Button: React.FC<ButtonProps> = ({
   textStyle,
 }) => {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const isDarkMode = useIsDarkMode();
+  const styles = createStyles(theme, isDarkMode);
 
   const buttonStyle = [
     styles.button,
@@ -62,7 +62,7 @@ const Button: React.FC<ButtonProps> = ({
   );
 };
 
-const createStyles = (theme: any) => StyleSheet.create({
+const createStyles = (theme: any, isDarkMode: boolean) => StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -73,15 +73,15 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   // Variants
   primary: {
-    backgroundColor: theme.primary,
+    backgroundColor: isDarkMode ? '#00ff88' : theme.primary,
   },
   secondary: {
-    backgroundColor: theme.accent,
+    backgroundColor: isDarkMode ? '#00ff88' : theme.accent,
   },
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: theme.border,
+    borderColor: isDarkMode ? '#00ff88' : theme.border,
   },
   // Sizes
   small: {
@@ -106,15 +106,15 @@ const createStyles = (theme: any) => StyleSheet.create({
     textAlign: 'center',
   },
   primaryText: {
-    color: '#ffffff',
+    color: isDarkMode ? '#000000' : '#ffffff',
     fontSize: 14,
   },
   secondaryText: {
-    color: theme.accent === '#00d66a' ? '#000000' : '#ffffff',
+    color: isDarkMode ? '#000000' : (theme.accent === '#00d66a' ? '#000000' : '#ffffff'),
     fontSize: 14,
   },
   outlineText: {
-    color: theme.text,
+    color: isDarkMode ? '#00ff88' : theme.text,
     fontSize: 14,
   },
   smallText: {

@@ -10,6 +10,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { categories, pricingFilters } from '../data/ai_toolsData';
+import { useTheme, useIsDarkMode } from '../themes/colors';
+
 
 interface CategoryModalProps {
   visible: boolean;
@@ -30,15 +32,9 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
   selectedCategory,
   selectedPricing,
 }) => {
-  const theme = {
-    background: '#ffffff',
-    surface: '#f8f9fa',
-    primary: '#007bff',
-    text: '#212529',
-    textSecondary: '#6c757d',
-    border: '#e9ecef',
-    modalOverlay: 'rgba(0, 0, 0, 0.5)',
-  };
+  const theme = useTheme();
+  const isDarkMode = useIsDarkMode();
+  const styles = createStyles(theme);
 
   const renderCategoryItem = ({ item }: { item: any }) => (
     <TouchableOpacity
@@ -146,19 +142,19 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: theme.modalOverlay || 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface || '#ffffff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '80%',
     minHeight: '60%',
-    shadowColor: '#000',
+    shadowColor: theme.shadow || '#000000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -171,29 +167,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-    backgroundColor: '#ffffff',
+    borderBottomColor: theme.border || '#e9ecef',
+    backgroundColor: theme.surface || '#ffffff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#212529',
+    color: theme.text || '#212529',
   },
   closeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.filterButtonBackground || '#e9ecef',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: theme.border || '#e9ecef',
   },
   closeButtonText: {
     fontSize: 16,
-    color: '#6c757d',
+    color: theme.textSecondary || '#6c757d',
     fontWeight: 'bold',
   },
   section: {
@@ -203,7 +199,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#212529',
+    color: theme.text || '#212529',
     marginBottom: 12,
   },
   categoryList: {
@@ -217,20 +213,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     marginBottom: 8,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.categoryTabInactive || '#e9ecef',
     borderWidth: 1,
-    borderColor: '#e9ecef',
-    shadowColor: '#000',
+    borderColor: theme.border || '#e9ecef',
+    shadowColor: theme.shadow || '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
   },
   selectedCategoryItem: {
-    backgroundColor: '#e3f2fd',
-    borderColor: '#007bff',
+    backgroundColor: theme.selected || '#e3f2fd',
+    borderColor: theme.primary || '#007bff',
     borderWidth: 2,
-    shadowColor: '#007bff',
+    shadowColor: theme.primary || '#007bff',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -253,21 +249,21 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#212529',
+    color: theme.text || '#212529',
     marginBottom: 2,
   },
   selectedCategoryText: {
-    color: '#007bff',
+    color: theme.primary || '#007bff',
     fontWeight: '600',
   },
   categoryCount: {
     fontSize: 13,
-    color: '#6c757d',
+    color: theme.textSecondary || '#6c757d',
     fontWeight: '400',
   },
   checkIcon: {
     fontSize: 18,
-    color: '#007bff',
+    color: theme.primary || '#007bff',
     fontWeight: 'bold',
     marginLeft: 8,
   },
@@ -282,22 +278,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     marginRight: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.categoryTabInactive || '#e9ecef',
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: theme.border || '#e9ecef',
     minWidth: 110,
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: theme.shadow || '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
   },
   selectedPricingItem: {
-    backgroundColor: '#e3f2fd',
-    borderColor: '#007bff',
+    backgroundColor: theme.selected || '#e3f2fd',
+    borderColor: theme.primary || '#007bff',
     borderWidth: 2,
-    shadowColor: '#007bff',
+    shadowColor: theme.primary || '#007bff',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -310,10 +306,10 @@ const styles = StyleSheet.create({
   pricingName: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#212529',
+    color: theme.text || '#212529',
   },
   selectedPricingText: {
-    color: '#007bff',
+    color: theme.primary || '#007bff',
     fontWeight: '600',
   },
   actionButtons: {
@@ -322,9 +318,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingBottom: 24,
     gap: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface || '#ffffff',
     borderTopWidth: 1,
-    borderTopColor: '#f1f3f4',
+    borderTopColor: theme.border || '#e9ecef',
   },
   clearButton: {
     flex: 1,
@@ -332,10 +328,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#6c757d',
+    borderColor: theme.textSecondary || '#6c757d',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
+    backgroundColor: theme.surface || '#ffffff',
+    shadowColor: theme.shadow || '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -343,7 +339,7 @@ const styles = StyleSheet.create({
   },
   clearButtonText: {
     fontSize: 16,
-    color: '#6c757d',
+    color: theme.textSecondary || '#6c757d',
     fontWeight: '500',
   },
   applyButton: {
@@ -351,17 +347,17 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 10,
-    backgroundColor: '#007bff',
     alignItems: 'center',
-    shadowColor: '#007bff',
+    backgroundColor: theme.primary || '#007bff',
+    shadowColor: theme.primary || '#007bff',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 4,
+    elevation: 3,
   },
   applyButtonText: {
     fontSize: 16,
-    color: '#ffffff',
+    color: theme.textOnPrimary || '#ffffff',
     fontWeight: '600',
   },
 });

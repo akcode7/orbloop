@@ -31,8 +31,8 @@ interface AppPreferences {
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
   const theme = useTheme();
-  const { themeMode, setThemeMode, isDarkMode } = useThemeContext();
-  const styles = createStyles(theme);
+   const { themeMode, setThemeMode, isDarkMode } = useThemeContext();
+  const styles = createStyles(theme, isDarkMode);
 
   // State management
   const [userProfile, setUserProfile] = useState<UserProfile>({
@@ -182,7 +182,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                   {userProfile.name.split(' ').map(n => n[0]).join('')}
                 </Text>
               </View>
-              <View style={styles.profileInfo}>
+                 <View style={styles.profileInfo}>
                 {isEditingProfile ? (
                   <>
                     <TextInput
@@ -192,15 +192,10 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                       placeholder="Full Name"
                       placeholderTextColor={theme.textSecondary}
                     />
-                    <TextInput
-                      style={styles.profileInput}
-                      value={userProfile.email}
-                      onChangeText={(text) => setUserProfile({ ...userProfile, email: text })}
-                      placeholder="Email"
-                      placeholderTextColor={theme.textSecondary}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
+                    <View style={styles.profileInputDisabled}>
+                      <Text style={styles.profileInputLabel}>Email</Text>
+                      <Text style={styles.profileInputText}>{userProfile.email}</Text>
+                    </View>
                   </>
                 ) : (
                   <>
@@ -325,7 +320,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
   );
 };
 
-const createStyles = (theme: any) => StyleSheet.create({
+const createStyles = (theme: any, isDarkMode: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.background,
@@ -429,30 +424,30 @@ const createStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'flex-end',
     gap: 12,
   },
-  editButton: {
+ editButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: theme.primary,
+    backgroundColor: isDarkMode ? '#00ff88' : theme.primary,
     borderRadius: 8,
   },
   editButtonText: {
-    color: '#ffffff',
+    color: isDarkMode ? '#000000' : '#ffffff',
     fontWeight: '600',
   },
   saveButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: theme.success,
+    backgroundColor: isDarkMode ? '#00ff88' : theme.success,
     borderRadius: 8,
   },
   saveButtonText: {
-    color: '#ffffff',
+    color: isDarkMode ? '#000000' : '#ffffff',
     fontWeight: '600',
   },
   cancelButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: theme.filterButtonBackground,
+    backgroundColor: theme.isDarkMode ? '#333333' : theme.filterButtonBackground,
     borderRadius: 8,
   },
   cancelButtonText: {
@@ -599,6 +594,22 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   bottomSpacing: {
     height: 40,
+  },
+  profileInputDisabled: {
+    paddingVertical: 8,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.border,
+    opacity: 0.6,
+  },
+  profileInputLabel: {
+    fontSize: 12,
+    color: theme.textSecondary,
+    marginBottom: 4,
+  },
+  profileInputText: {
+    fontSize: 16,
+    color: theme.textSecondary,
   },
 });
 

@@ -43,21 +43,50 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 }) => {
   const theme = useTheme();
   const isDarkMode = useIsDarkMode();
+ 
   const styles = createStyles(theme);
 
   const [refreshing, setRefreshing] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState('home');
+  const [activeCategory, setActiveCategory] = useState('all');
+
+  // Category data
+  const categories = [
+    { id: 'all', name: 'All AI Tools', icon: '🤖' },
+    { id: 'productivity', name: 'Productivity', icon: '⚡' },
+    { id: 'video', name: 'Video Creator', icon: '🎬' },
+    { id: 'image', name: 'Image Generator', icon: '🎨' },
+    { id: 'ppt', name: 'PPT Maker', icon: '📊' },
+  ];
+
+  // Filter tools based on active category
+  const getFilteredTools = () => {
+    if (activeCategory === 'all') return aiToolsData;
+    
+    const categoryMap: { [key: string]: string[] } = {
+      'productivity': ['Productivity'],
+      'video': ['Video Generation'],
+      'image': ['Image Generation'],
+      'ppt': ['Productivity'], // Assuming PPT tools are in Productivity category
+    };
+    
+    const targetCategories = categoryMap[activeCategory] || [];
+    return aiToolsData.filter(tool => 
+      targetCategories.includes(tool.category) ||
+      (activeCategory === 'ppt' && tool.name.toLowerCase().includes('presentation'))
+    );
+  };
 
   // Get latest releases (newest tools, could be based on date or ID)
-  const latestReleases = aiToolsData
+  const latestReleases = getFilteredTools()
     .slice()
     .sort((a, b) => parseInt(b.id) - parseInt(a.id))
     .slice(0, 4);
 
-  // Get trending tools - limit to 4 for slider effect
-  const trendingTools = aiToolsData.filter(tool => tool.isTrending).slice(0, 4);
+  // Get trending tools - limit to 4 for slider effect  
+  const trendingTools = getFilteredTools().filter(tool => tool.isTrending).slice(0, 4);
 
   // Calculate card dimensions for 3-item slider layout
   const cardWidth = (width - 60) / 3; // Screen width minus padding, divided by 3
@@ -125,7 +154,11 @@ Choose from our curated collection of the best AI tools for productivity, creati
     }
   };
 
-   const handleTabPress = (tab: string) => {
+  const handleCategoryPress = (categoryId: string) => {
+    setActiveCategory(categoryId);
+  };
+
+  const handleTabPress = (tab: string) => {
     setActiveTab(tab);
     switch (tab) {
       case 'home':
@@ -139,7 +172,7 @@ Choose from our curated collection of the best AI tools for productivity, creati
           onNavigateToSaved();
         }
         break;
-      case 'profile':
+      case 'settings':
         if (onNavigateToProfile) {
           onNavigateToProfile();
         }
@@ -228,7 +261,7 @@ Choose from our curated collection of the best AI tools for productivity, creati
           </View>
         </View>
         
-         {/* Search Bar */}
+        {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
             <Text style={styles.searchIcon}>🔍</Text>
@@ -246,6 +279,34 @@ Choose from our curated collection of the best AI tools for productivity, creati
           >
             <Text style={styles.userButtonIcon}>👤</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Category Tabs */}
+        <View style={styles.categoryTabsContainer}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryTabsScrollView}
+          >
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={[
+                  styles.categoryTab,
+                  activeCategory === category.id && styles.activeCategoryTab
+                ]}
+                onPress={() => handleCategoryPress(category.id)}
+              >
+                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                <Text style={[
+                  styles.categoryText,
+                  activeCategory === category.id && styles.activeCategoryText
+                ]}>
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Trending Tools Section */}
@@ -390,7 +451,7 @@ Choose from our curated collection of the best AI tools for productivity, creati
   );
 };
 
-const createStyles = (theme: any) => StyleSheet.create({
+const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.background,
@@ -491,6 +552,45 @@ const createStyles = (theme: any) => StyleSheet.create({
   userButtonIcon: {
     fontSize: 18,
   },
+  categoryTabsContainer: {
+    paddingVertical: 15,
+  },
+  categoryTabsScrollView: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  categoryTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.cardBackground,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: theme.border || 'rgba(0,0,0,0.1)',
+    shadowColor: theme.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  activeCategoryTab: {
+    backgroundColor: theme.categoryTabActive,
+    borderColor: theme.categoryTabActive,
+  },
+  categoryIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  categoryText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: theme.text,
+  },
+  activeCategoryText: {
+    color: theme.textOnPrimary,
+    fontWeight: '600',
+  },
   statCard: {
     flex: 1,
     backgroundColor: theme.cardBackground,
@@ -580,11 +680,11 @@ const createStyles = (theme: any) => StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  trendingBadge: {
+ trendingBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: theme.accent,
+    backgroundColor: theme.trendingBadge,
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 3,
@@ -593,7 +693,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   trendingBadgeText: {
     fontSize: 9,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: theme.textOnError,
   },
   trendingHorizontalList: {
     paddingLeft: 20,

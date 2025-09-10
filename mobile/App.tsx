@@ -199,12 +199,16 @@ function App() {
       </SafeAreaProvider>
     );
   }
-
-  if (currentScreen === 'allListings') {
+  
+ if (currentScreen === 'allListings') {
     return (
       <SafeAreaProvider>
         <ThemeProvider>
-          <AIListingScreen />
+          <AIListingScreen 
+            onNavigateToHome={handleNavigateToHome}
+            onNavigateToSaved={handleNavigateToSaved}
+            onNavigateToSettings={handleNavigateToSettings}
+          />
         </ThemeProvider>
       </SafeAreaProvider>
     );

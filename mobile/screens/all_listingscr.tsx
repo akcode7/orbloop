@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
-  Modal,
   Linking,
   Alert,
   StatusBar,
@@ -21,11 +20,24 @@ import AICard from '../components/aicard';
 import Button from '../components/buttons';
 import FilterButton from '../components/filterbtn';
 import CategoryModal from '../components/category_modal';
+import SortModal from '../components/SortModal';
+import BottomNavigation from '../components/bottom_navigation';
 import { useTheme, useIsDarkMode } from '../themes/colors';
 
 const { width } = Dimensions.get('window');
 
-const AIListingScreen: React.FC = () => {
+interface AIListingScreenProps {
+  onNavigateToHome?: () => void;
+  onNavigateToSaved?: () => void;
+  onNavigateToSettings?: () => void;
+  
+}
+
+const AIListingScreen: React.FC<AIListingScreenProps> = ({
+  onNavigateToHome,
+  onNavigateToSaved,
+  onNavigateToSettings,
+}) => {
   const [selectedAI, setSelectedAI] = useState<AITool | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [showDetailScreen, setShowDetailScreen] = useState(false);
@@ -34,9 +46,13 @@ const AIListingScreen: React.FC = () => {
   const [selectedPricing, setSelectedPricing] = useState('all');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showTrending, setShowTrending] = useState(false);
+  const [activeTab, setActiveTab] = useState('explore');
+  const [sortBy, setSortBy] = useState<'name' | 'rating' | 'category' | 'dateAdded' | 'trending'>('dateAdded');
+  const [showSortModal, setShowSortModal] = useState(false);
 
   const theme = useTheme();
   const isDarkMode = useIsDarkMode();
+
   const styles = createStyles(theme);
 
 // ... existing code ...
@@ -99,13 +115,38 @@ const AIListingScreen: React.FC = () => {
       }
     }
 
+     // Apply sorting
+    if (selectedCategory === 'highest_rated') {
+      filtered = filtered.filter(tool => tool.rating >= 4.5)
+        .sort((a, b) => b.rating - a.rating);
+    } else {
+      // Apply other sorting
+      filtered.sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return a.name.localeCompare(b.name);
+          case 'rating':
+            return b.rating - a.rating;
+          case 'category':
+            return a.category.localeCompare(b.category);
+          case 'trending':
+            if (a.isTrending && !b.isTrending) return -1;
+            if (!a.isTrending && b.isTrending) return 1;
+            return b.rating - a.rating; // Secondary sort by rating
+          case 'dateAdded':
+          default:
+            return parseInt(b.id) - parseInt(a.id); // Newest first
+        }
+      });
+    }
+
     return filtered;
-  }, [searchText, selectedCategory, selectedPricing, showTrending]);
+  }, [searchText, selectedCategory, selectedPricing, showTrending, sortBy]);
 
   // Handler functions
   const handleCardPress = (aiTool: AITool) => {
     setSelectedAI(aiTool);
-    setModalVisible(true);
+    setShowDetailScreen(true);
   };
 
   const handleViewDetail = () => {
@@ -113,10 +154,12 @@ const AIListingScreen: React.FC = () => {
     setShowDetailScreen(true);
   };
 
-  const handleBackFromDetail = () => {
+    const handleBackFromDetail = () => {
     setShowDetailScreen(false);
     setSelectedAI(null);
   };
+
+  
 
   const handleVisitExternal = async () => {
     if (!selectedAI?.externalUrl) {
@@ -161,10 +204,60 @@ const AIListingScreen: React.FC = () => {
     setShowTrending(false); // Reset trending when selecting category
   };
 
-  const handleSelectPricing = (pricingId: string) => {
+ const handleSelectPricing = (pricingId: string) => {
     console.log('Pricing selected:', pricingId);
     setSelectedPricing(pricingId);
   };
+
+  const handleRateAI = (aiToolId: string, rating: number) => {
+    console.log(`User rated AI tool ${aiToolId} with ${rating} stars`);
+    // Here you could implement saving the rating to local storage or API
+    // For now, we'll just log it
+  };
+
+  const handleSortPress = () => {
+    setShowSortModal(true);
+  };
+
+  const handleSelectSort = (sortOption: 'name' | 'rating' | 'category' | 'dateAdded' | 'trending') => {
+    setSortBy(sortOption);
+  };
+
+  const getSortIcon = () => {
+    switch (sortBy) {
+      case 'name': return '🔤';
+      case 'rating': return '⭐';
+      case 'category': return '📁';
+      case 'trending': return '🔥';
+      case 'dateAdded': return '📅';
+      default: return '📅';
+    }
+  };
+
+  const handleTabPress = (tab: string) => {
+    setActiveTab(tab);
+    switch (tab) {
+      case 'home':
+        if (onNavigateToHome) {
+          onNavigateToHome();
+        }
+        break;
+      case 'explore':
+        // Already on explore screen
+        break;
+      case 'saved':
+        if (onNavigateToSaved) {
+          onNavigateToSaved();
+        }
+        break;
+      case 'settings':
+        if (onNavigateToSettings) {
+          onNavigateToSettings();
+        }
+        break;
+    }
+  };
+
 
   const renderAICard = ({ item }: { item: AITool }) => (
     <View style={styles.cardContainer}>
@@ -210,9 +303,10 @@ const AIListingScreen: React.FC = () => {
 
   if (showDetailScreen && selectedAI) {
     return (
-      <AIDetailScreen
+       <AIDetailScreen
         aiTool={selectedAI}
         onBack={handleBackFromDetail}
+        onRateAI={handleRateAI}
       />
     );
   }
@@ -226,7 +320,7 @@ const AIListingScreen: React.FC = () => {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={onNavigateToHome}>
           <Text style={styles.backArrow}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>AI Tools</Text>
@@ -248,9 +342,9 @@ const AIListingScreen: React.FC = () => {
       </View>
 
       {/* Saved Tools Section */}
-      <TouchableOpacity style={styles.savedSection}>
+      <TouchableOpacity style={styles.savedSection} onPress={onNavigateToSaved}>
         <Text style={styles.bookmarkIcon}>🔖</Text>
-        <Text style={styles.savedText}>Your Saved AI Tools</Text>
+        <Text style={styles.savedText} >Your Saved AI Tools</Text>
       </TouchableOpacity>
 
       {/* Filter Buttons */}
@@ -267,7 +361,17 @@ const AIListingScreen: React.FC = () => {
           isActive={selectedCategory !== 'all' || selectedPricing !== 'all'}
           onPress={handleCategoryPress}
         />
+
+        <TouchableOpacity 
+          style={[styles.sortButton, sortBy !== 'dateAdded' && styles.sortButtonActive]}
+          onPress={handleSortPress}
+        >
+          <Text style={styles.sortIcon}>{getSortIcon()}</Text>
+          <Text style={styles.sortText}>Sort</Text>
+        </TouchableOpacity>
       </View>
+
+       
 
       {/* Active Filters Display */}
       {(selectedCategory !== 'all' || selectedPricing !== 'all' || showTrending) && (
@@ -305,43 +409,9 @@ const AIListingScreen: React.FC = () => {
         }
       />
 
-      {/* Options Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{selectedAI?.name}</Text>
-            
-            <Button
-              title="View Details"
-              variant="primary"
-              onPress={handleViewDetail}
-              style={styles.modalButton}
-            />
-
-            <Button
-              title="Visit in Browser"
-              variant="primary"
-              onPress={handleVisitExternal}
-              style={styles.modalButton}
-            />
-
-            <Button
-              title="Cancel"
-              variant="outline"
-              onPress={() => setModalVisible(false)}
-              style={styles.modalButton}
-            />
-          </View>
-        </View>
-      </Modal>
 
       {/* Category Modal */}
-      <CategoryModal
+       <CategoryModal
         visible={showCategoryModal}
         onClose={() => setShowCategoryModal(false)}
         onSelectCategory={handleSelectCategory}
@@ -350,26 +420,19 @@ const AIListingScreen: React.FC = () => {
         selectedPricing={selectedPricing}
       />
 
+       {/* Sort Modal */}
+      <SortModal
+        visible={showSortModal}
+        onClose={() => setShowSortModal(false)}
+        selectedSort={sortBy}
+        onSelectSort={handleSelectSort}
+      />
+
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>🏠</Text>
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>▶️</Text>
-          <Text style={styles.navText}>Courses</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItem, styles.activeNavItem]}>
-          <Text style={styles.navIcon}>🤖</Text>
-          <Text style={[styles.navText, styles.activeNavText]}>AI Tools</Text>
-          <View style={styles.activeDot} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>👤</Text>
-          <Text style={styles.navText}>Profile</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomNavigation
+        activeTab={activeTab}
+        onTabPress={handleTabPress}
+      />
     </SafeAreaView>
   );
 };
@@ -459,16 +522,24 @@ const createStyles = (theme: any) => StyleSheet.create({
     marginBottom: 20,
     gap: 15,
   },
-  cardContainer: {
-    position: 'relative',
-    width: (width - 30) / 2,
-    marginBottom: 20,
+ cardContainer: {
+  position: 'relative',
+  width: (width - 45) / 2,
+  marginBottom: 20,
+  },
+   listContainer: {
+    paddingHorizontal: 15,
+    paddingBottom: 100,
+  },
+  row: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 0,
   },
   trendingBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: '#ff4757',
+    backgroundColor: theme.trendingBadge,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 12,
@@ -476,14 +547,14 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   trendingText: {
     fontSize: 10,
-    color: '#ffffff',
+    color: theme.textOnError,
     fontWeight: 'bold',
   },
   openSourceBadge: {
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: '#2ed573',
+    backgroundColor: theme.openSourceBadge,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 12,
@@ -491,14 +562,14 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   openSourceText: {
     fontSize: 10,
-    color: '#ffffff',
+    color: theme.textOnSuccess,
     fontWeight: 'bold',
   },
   ratingContainer: {
     position: 'absolute',
     bottom: 8,
     left: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: theme.ratingBackground,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
@@ -506,7 +577,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   ratingText: {
     fontSize: 10,
-    color: '#ffffff',
+    color: theme.textOnPrimary,
     fontWeight: 'bold',
   },
   activeFiltersContainer: {
@@ -556,13 +627,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  listContainer: {
-    paddingHorizontal: 15,
-    paddingBottom: 100,
-  },
-  row: {
-    justifyContent: 'space-between',
-  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: theme.modalOverlay,
@@ -637,6 +702,30 @@ const createStyles = (theme: any) => StyleSheet.create({
     borderRadius: 3,
     backgroundColor: theme.accent,
   },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: theme.cardBackground,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  sortButtonActive: {
+    backgroundColor: theme.primary + '20',
+    borderColor: theme.primary,
+  },
+  sortIcon: {
+    fontSize: 14,
+    marginRight: 5,
+  },
+  sortText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.text,
+  },
+  
 });
 
 export default AIListingScreen;
