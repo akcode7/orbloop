@@ -21,6 +21,7 @@ import Button from '../components/buttons';
 import FilterButton from '../components/filterbtn';
 import CategoryModal from '../components/category_modal';
 import SortModal from '../components/SortModal';
+import SearchIcon from '../src/assets/icons/search_icon';
 import BottomNavigation from '../components/bottom_navigation';
 import { useTheme, useIsDarkMode } from '../themes/colors';
 
@@ -30,6 +31,7 @@ interface AIListingScreenProps {
   onNavigateToHome?: () => void;
   onNavigateToSaved?: () => void;
   onNavigateToSettings?: () => void;
+  onNavigateToLearn?: () => void;
   
 }
 
@@ -37,6 +39,7 @@ const AIListingScreen: React.FC<AIListingScreenProps> = ({
   onNavigateToHome,
   onNavigateToSaved,
   onNavigateToSettings,
+  onNavigateToLearn,
 }) => {
   const [selectedAI, setSelectedAI] = useState<AITool | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -250,9 +253,9 @@ const AIListingScreen: React.FC<AIListingScreenProps> = ({
           onNavigateToSaved();
         }
         break;
-      case 'settings':
-        if (onNavigateToSettings) {
-          onNavigateToSettings();
+      case 'learn':
+        if (onNavigateToLearn) {
+          onNavigateToLearn();
         }
         break;
     }
@@ -327,18 +330,18 @@ const AIListingScreen: React.FC<AIListingScreenProps> = ({
         <View style={styles.placeholder} />
       </View>
 
-      {/* Search Bar */}
+       {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search AI Tools"
-            placeholderTextColor={theme.textSecondary}
-            value={searchText}
-            onChangeText={setSearchText}
-          />
+        <View style={styles.searchIconContainer}>
+          <SearchIcon width={16} height={16} fill={theme.textSecondary} />
         </View>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search AI Tools..."
+          placeholderTextColor={theme.textSecondary}
+          value={searchText}
+          onChangeText={setSearchText}
+        />
       </View>
 
       {/* Saved Tools Section */}
@@ -468,9 +471,24 @@ const createStyles = (theme: any) => StyleSheet.create({
     width: 40,
   },
   searchContainer: {
-    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.cardBackground,
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    marginHorizontal: 20,
     marginBottom: 20,
-    marginTop: 15,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  searchIconContainer: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: theme.text,
   },
   searchBar: {
     flexDirection: 'row',
@@ -492,11 +510,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     marginRight: 10,
     color: theme.textSecondary,
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: theme.text,
-  },
+
   savedSection: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -11,6 +11,9 @@ import {
 import { AITool } from '../aitypes/ai_type';
 import Button from './buttons';
 import { useTheme } from '../themes/colors';
+import StarIcon from '../src/assets/icons/star_icon';
+import SavedIcon from '../src/assets/icons/saved_icon';
+import ShareIcon from '../src/assets/icons/share_icon';
 
 interface AICardProps {
   aiTool: AITool;
@@ -62,10 +65,13 @@ const AICard: React.FC<AICardProps> = ({
             </Text>
             <View style={styles.listTopActions}>
               <View style={styles.listRating}>
-                <Text style={styles.listRatingText}>⭐ {aiTool.rating}</Text>
+                <View style={styles.ratingContent}>
+                  <StarIcon width={10} height={10} fill={theme.primary} />
+                  <Text style={[styles.listRatingText, { marginLeft: 3 }]}>{aiTool.rating}</Text>
+                </View>
               </View>
               <TouchableOpacity style={styles.listShareButton} onPress={handleSharePress}>
-                <Text style={styles.listShareIcon}>📤</Text>
+                <ShareIcon width={14} height={14} fill={theme.text} />
               </TouchableOpacity>
             </View>
           </View>
@@ -78,7 +84,7 @@ const AICard: React.FC<AICardProps> = ({
               variant="outline"
               size="small"
               onPress={handleSavePress}
-              icon={isSaved ? "🗑️" : "🔖"}
+              icon={<SavedIcon width={14} height={14} fill={isSaved ? theme.error : theme.primary} />}
               style={styles.listSaveButton}
               textStyle={styles.listButtonText}
             />
@@ -101,7 +107,7 @@ const AICard: React.FC<AICardProps> = ({
       <View style={styles.imageContainer}>
         <Image source={{ uri: aiTool.image }} style={styles.cardImage} />
         <TouchableOpacity style={styles.shareButton} onPress={handleSharePress}>
-          <Text style={styles.shareIcon}>📤</Text>
+          <ShareIcon width={layout === 'grid' ? 14 : 16} height={layout === 'grid' ? 14 : 16} fill="#ffffff" />
         </TouchableOpacity>
       </View>
       <View style={styles.cardContent}>
@@ -110,7 +116,10 @@ const AICard: React.FC<AICardProps> = ({
             {aiTool.name}
           </Text>
           <View style={styles.rating}>
-            <Text style={styles.ratingText}>⭐ {aiTool.rating}</Text>
+            <View style={styles.ratingContent}>
+              <StarIcon width={layout === 'grid' ? 8 : 10} height={layout === 'grid' ? 8 : 10} fill={theme.primary} />
+              <Text style={[styles.ratingText, { marginLeft: 3 }]}>{aiTool.rating}</Text>
+            </View>
           </View>
         </View>
         <Text style={styles.cardDescription} numberOfLines={2}>
@@ -122,7 +131,7 @@ const AICard: React.FC<AICardProps> = ({
             variant="outline"
             size="small"
             onPress={handleSavePress}
-            icon={isSaved ? "🗑️" : "🔖"}
+            icon={<SavedIcon width={layout === 'grid' ? 10 : 12} height={layout === 'grid' ? 10 : 12} fill={isSaved ? theme.error : theme.primary} />}
             style={styles.saveButton}
             textStyle={styles.saveButtonText}
           />
@@ -324,6 +333,10 @@ const createStyles = (theme: any, layout: 'grid' | 'horizontal' | 'list') => {
     },
     listButtonText: {
       fontSize: 12,
+    },
+     ratingContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
     },
   });
 };

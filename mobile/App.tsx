@@ -8,21 +8,27 @@ import OnboardingScreen from './screens/onboarding_scr';
 import LoginScreen from './screens/auth/login';
 import RegisterScreen from './screens/auth/signup';
 import HomeScreen from './screens/home_screen';
-import SavedAIToolsScreen from './screens/saves_ai_tools';
+import SavedAIToolsScreen from './screens/saved_items';
 import AIDetailScreen from './components/aidetails';
 import SettingsScreen from './screens/settings_screen';
+import LearnAIScreen from './screens/learn_ai';
+import LearnAIDetailedScreen from './screens/learn_ai_detailed';
 import { ThemeProvider } from './themes/colors';
 import { AITool } from './aitypes/ai_type';
+import { Course } from './aitypes/course_type';
 
 const ONBOARDING_COMPLETED_KEY = '@onboarding_completed';
 
-type Screen = 'onboarding' | 'login' | 'signup' | 'home' | 'allListings' | 'saved' | 'detail' | 'settings';
+type Screen = 'onboarding' | 'login' | 'signup' | 'home' | 'allListings' | 'saved' | 'detail' | 'settings' | 'learn' | 'learnDetail';
+
+
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('onboarding');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAI, setSelectedAI] = useState<AITool | null>(null);
   const [savedTools, setSavedTools] = useState<AITool[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -109,9 +115,18 @@ function App() {
     setCurrentScreen('settings');
   };
 
+   const handleNavigateToLearn = () => {
+    setCurrentScreen('learn');
+  };
+
   const handleNavigateToDetail = (tool: AITool) => {
     setSelectedAI(tool);
     setCurrentScreen('detail');
+  };
+
+  const handleNavigateToCourse = (course: Course) => {
+    setSelectedCourse(course);
+    setCurrentScreen('learnDetail');
   };
 
   const handleNavigateToHome = () => {
@@ -193,6 +208,7 @@ function App() {
             onSaveTool={handleSaveTool}
             onNavigateToSaved={handleNavigateToSaved}
             onNavigateToProfile={handleNavigateToSettings}
+            onNavigateToLearn={handleNavigateToLearn}
             savedTools={savedTools}
           />
         </ThemeProvider>
@@ -200,7 +216,7 @@ function App() {
     );
   }
   
- if (currentScreen === 'allListings') {
+if (currentScreen === 'allListings') {
     return (
       <SafeAreaProvider>
         <ThemeProvider>
@@ -208,6 +224,7 @@ function App() {
             onNavigateToHome={handleNavigateToHome}
             onNavigateToSaved={handleNavigateToSaved}
             onNavigateToSettings={handleNavigateToSettings}
+            onNavigateToLearn={handleNavigateToLearn}
           />
         </ThemeProvider>
       </SafeAreaProvider>
@@ -226,12 +243,40 @@ function App() {
     );
   }
 
-  if (currentScreen === 'settings') {
+   if (currentScreen === 'settings') {
     return (
       <SafeAreaProvider>
         <ThemeProvider>
           <SettingsScreen 
             onBack={handleNavigateToHome}
+          />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    );
+  }
+
+  if (currentScreen === 'learn') {
+    return (
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <LearnAIScreen
+            onNavigateToHome={handleNavigateToHome}
+            onNavigateToExplore={handleNavigateToAllListings}
+            onNavigateToSaved={handleNavigateToSaved}
+            onNavigateToCourse={handleNavigateToCourse}
+          />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    );
+  }
+
+  if (currentScreen === 'learnDetail' && selectedCourse) {
+    return (
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <LearnAIDetailedScreen
+            course={selectedCourse}
+            onBack={() => setCurrentScreen('learn')}
           />
         </ThemeProvider>
       </SafeAreaProvider>
@@ -255,12 +300,13 @@ function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <HomeScreen
+         <HomeScreen
           onNavigateToAllListings={handleNavigateToAllListings}
           onNavigateToDetail={handleNavigateToDetail}
           onSaveTool={handleSaveTool}
           onNavigateToSaved={handleNavigateToSaved}
           onNavigateToProfile={handleNavigateToSettings}
+          onNavigateToLearn={handleNavigateToLearn}
           savedTools={savedTools}
         />
       </ThemeProvider>

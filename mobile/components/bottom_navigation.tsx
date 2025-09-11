@@ -7,6 +7,10 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme, useIsDarkMode } from '../themes/colors';
+import HomeIcon from '../src/assets/icons/home_icon';
+import SearchIcon from '../src/assets/icons/search_icon';
+import SavedIcon from '../src/assets/icons/saved_icon';
+import LearnIcon from '../src/assets/icons/learn_icon';
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -20,11 +24,29 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   const theme = useTheme();
   const isDarkMode = useIsDarkMode();
 
+   const getIcon = (tabId: string, isActive: boolean) => {
+    const iconColor = isActive ? theme.primary : theme.textSecondary;
+    const iconSize = 20;
+    
+    switch (tabId) {
+      case 'home':
+        return <HomeIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'explore':
+        return <SearchIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'saved':
+        return <SavedIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'learn':
+        return <LearnIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      default:
+        return null;
+    }
+  };
+
   const tabs = [
-    { id: 'home', name: 'Home', icon: '🏠' },
-    { id: 'explore', name: 'Explore', icon: '🔍' },
-    { id: 'saved', name: 'Saved', icon: '🔖' },
-    { id: 'settings', name: 'Settings', icon: '⚙️' },
+    { id: 'home', name: 'Home'},
+    { id: 'explore', name: 'Explore'},
+    { id: 'saved', name: 'Saved'},
+    { id: 'learn', name: 'Learn'},
   ];
 
   return (
@@ -43,12 +65,9 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           onPress={() => onTabPress(tab.id)}
           activeOpacity={0.7}
         >
-          <Text style={[
-            styles.icon,
-            activeTab === tab.id && { color: theme.primary }
-          ]}>
-            {tab.icon}
-          </Text>
+          <View style={styles.iconContainer}>
+            {getIcon(tab.id, activeTab === tab.id)}
+          </View>
           <Text style={[
             styles.label,
             { color: activeTab === tab.id ? theme.primary : theme.textSecondary }
@@ -84,8 +103,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     borderRadius: 12,
   },
-  icon: {
-    fontSize: 20,
+  iconContainer: {
     marginBottom: 4,
   },
   label: {

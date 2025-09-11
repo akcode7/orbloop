@@ -49,6 +49,16 @@ const Button: React.FC<ButtonProps> = ({
     textStyle,
   ];
 
+   const renderIcon = () => {
+    if (!icon) return null;
+    
+    if (typeof icon === 'string') {
+      return <Text style={styles.icon}>{icon}</Text>;
+    } else {
+      return <Text style={styles.iconContainer}>{icon}</Text>;
+    }
+  };
+
   return (
     <TouchableOpacity
       style={buttonStyle}
@@ -56,7 +66,7 @@ const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       activeOpacity={0.7}
     >
-      {icon && <Text style={styles.icon}>{icon}</Text>}
+      {renderIcon()}
       <Text style={textStyleCombined}>{title}</Text>
     </TouchableOpacity>
   );
@@ -129,10 +139,13 @@ const createStyles = (theme: any, isDarkMode: boolean) => StyleSheet.create({
   disabledText: {
     opacity: 0.7,
   },
-  icon: {
+   icon: {
     fontSize: 14,
     marginRight: 8,
   },
+  iconContainer: {
+    marginRight: 8,
+  }
 });
 
 export default Button;

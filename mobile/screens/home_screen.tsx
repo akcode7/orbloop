@@ -12,12 +12,14 @@ import {
   TextInput,
   Share,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AITool } from '../aitypes/ai_type';
 import { aiToolsData } from '../data/ai_toolsData';
 import AICard from '../components/aicard';
 import BottomNavigation from '../components/bottom_navigation';
+import SearchIcon from '../src/assets/icons/search_icon';
 import { useTheme, useIsDarkMode } from '../themes/colors';
 
 interface HomeScreenProps {
@@ -28,18 +30,20 @@ interface HomeScreenProps {
   savedTools: AITool[];
   onNavigateToSearch?: () => void;
   onNavigateToProfile?: () => void;
+  onNavigateToLearn?: () => void;
 }
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen: React.FC<HomeScreenProps> = ({
-   onNavigateToAllListings,
+  onNavigateToAllListings,
   onNavigateToDetail,
   onSaveTool,
   onNavigateToSaved,
   savedTools = [],
   onNavigateToSearch,
   onNavigateToProfile,
+  onNavigateToLearn,
 }) => {
   const theme = useTheme();
   const isDarkMode = useIsDarkMode();
@@ -54,29 +58,44 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   // Category data
   const categories = [
-    { id: 'all', name: 'All AI Tools', icon: '🤖' },
-    { id: 'productivity', name: 'Productivity', icon: '⚡' },
-    { id: 'video', name: 'Video Creator', icon: '🎬' },
-    { id: 'image', name: 'Image Generator', icon: '🎨' },
-    { id: 'ppt', name: 'PPT Maker', icon: '📊' },
+    { id: 'all', name: 'All AI Tools'},
+    { id: 'productivity', name: 'Productivity'},
+    { id: 'video', name: 'Video Creator'},
+    { id: 'image', name: 'Image Generator'},
+    { id: 'ppt', name: 'PPT Maker'},
   ];
 
-  // Filter tools based on active category
+ // Filter tools based on active category and search text
   const getFilteredTools = () => {
-    if (activeCategory === 'all') return aiToolsData;
-    
-    const categoryMap: { [key: string]: string[] } = {
-      'productivity': ['Productivity'],
-      'video': ['Video Generation'],
-      'image': ['Image Generation'],
-      'ppt': ['Productivity'], // Assuming PPT tools are in Productivity category
-    };
-    
-    const targetCategories = categoryMap[activeCategory] || [];
-    return aiToolsData.filter(tool => 
-      targetCategories.includes(tool.category) ||
-      (activeCategory === 'ppt' && tool.name.toLowerCase().includes('presentation'))
-    );
+    let filtered = aiToolsData;
+
+    // Apply search filter first
+    if (searchText.trim()) {
+      filtered = filtered.filter(tool =>
+        tool.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        tool.description.toLowerCase().includes(searchText.toLowerCase()) ||
+        tool.category.toLowerCase().includes(searchText.toLowerCase()) ||
+        tool.tags?.some(tag => tag.toLowerCase().includes(searchText.toLowerCase()))
+      );
+    }
+
+    // Apply category filter
+    if (activeCategory !== 'all') {
+      const categoryMap: { [key: string]: string[] } = {
+        'productivity': ['Productivity'],
+        'video': ['Video Generation'],
+        'image': ['Image Generation'],
+        'ppt': ['Productivity'], // Assuming PPT tools are in Productivity category
+      };
+      
+      const targetCategories = categoryMap[activeCategory] || [];
+      filtered = filtered.filter(tool => 
+        targetCategories.includes(tool.category) ||
+        (activeCategory === 'ppt' && tool.name.toLowerCase().includes('presentation'))
+      );
+    }
+
+    return filtered;
   };
 
   // Get latest releases (newest tools, could be based on date or ID)
@@ -93,8 +112,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const snapInterval = cardWidth + 10; // Card width plus gap
 
 
-  // Get highest rated tools
-  const highestRated = aiToolsData
+   // Get highest rated tools
+  const highestRated = getFilteredTools()
     .filter(tool => tool.rating >= 4.5)
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 3);
@@ -172,9 +191,9 @@ Choose from our curated collection of the best AI tools for productivity, creati
           onNavigateToSaved();
         }
         break;
-      case 'settings':
-        if (onNavigateToProfile) {
-          onNavigateToProfile();
+      case 'learn':
+        if (onNavigateToLearn) {
+          onNavigateToLearn();
         }
         break;
     }
@@ -262,24 +281,59 @@ Choose from our curated collection of the best AI tools for productivity, creati
         </View>
         
         {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Text style={styles.searchIcon}>🔍</Text>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchIconContainer}>
+              <SearchIcon width={20} height={20} fill={theme.textSecondary} />
+            </View>
             <TextInput
               style={styles.searchInput}
-              placeholder="Search AI Tools"
+              placeholder="Search AI tools, categories..."
               placeholderTextColor={theme.textSecondary}
               value={searchText}
               onChangeText={setSearchText}
             />
           </View>
-          <TouchableOpacity 
-            style={styles.userButton}
-            onPress={onNavigateToProfile}
-          >
-            <Text style={styles.userButtonIcon}>👤</Text>
-          </TouchableOpacity>
-        </View>
+
+        {/* Search Results Section - Show when searching */}
+        {searchText.trim() && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>🔍 Search Results</Text>
+                <Text style={styles.sectionSubtitle}>
+                  {getFilteredTools().length} tools found for "{searchText}"
+                </Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.clearSearchButton}
+                onPress={() => setSearchText('')}
+              >
+                <Text style={styles.clearSearchText}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={getFilteredTools().slice(0, 9)}
+              renderItem={renderGridCard}
+              keyExtractor={(item) => `search-${item.id}`}
+              numColumns={3}
+              scrollEnabled={false}
+              columnWrapperStyle={styles.searchGridRow}
+              contentContainerStyle={styles.gridContent}
+            />
+            
+            {getFilteredTools().length > 9 && (
+              <TouchableOpacity 
+                style={styles.viewMoreButton}
+                onPress={onNavigateToAllListings}
+              >
+                <Text style={styles.viewMoreText}>
+                  View All {getFilteredTools().length} Results
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         {/* Category Tabs */}
         <View style={styles.categoryTabsContainer}>
@@ -297,7 +351,6 @@ Choose from our curated collection of the best AI tools for productivity, creati
                 ]}
                 onPress={() => handleCategoryPress(category.id)}
               >
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
                 <Text style={[
                   styles.categoryText,
                   activeCategory === category.id && styles.activeCategoryText
@@ -399,7 +452,7 @@ Choose from our curated collection of the best AI tools for productivity, creati
         </View>
         
 
-        {/* Highest Rated Section */}
+      {/* Highest Rated Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View>
@@ -422,8 +475,15 @@ Choose from our curated collection of the best AI tools for productivity, creati
                 style={styles.ratedToolItem}
                 onPress={() => handleCardPress(tool)}
               >
-                <View style={styles.ratedToolRank}>
-                  <Text style={styles.rankNumber}>{index + 1}</Text>
+                <View style={styles.ratedToolImageContainer}>
+                  <Image 
+                    source={{ uri: tool.image }}
+                    style={styles.ratedToolImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.rankBadge}>
+                    <Text style={styles.rankBadgeText}>{index + 1}</Text>
+                  </View>
                 </View>
                 <View style={styles.ratedToolInfo}>
                   <Text style={styles.ratedToolName}>{tool.name}</Text>
@@ -503,12 +563,30 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
     fontSize: 16,
     color: theme.textSecondary,
   },
-  searchContainer: {
+ searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: theme.cardBackground,
+    borderRadius: 25,
     paddingHorizontal: 20,
+    paddingVertical: 15,
     marginBottom: 20,
-    gap: 12,
+    shadowColor: isDarkMode ? '#000' : '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  searchIconContainer: {
+    marginRight: 15,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: theme.text,
+    fontWeight: '500',
   },
   searchBar: {
     flex: 1,
@@ -530,11 +608,6 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
     fontSize: 16,
     marginRight: 10,
     color: theme.textSecondary,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: theme.text,
   },
   userButton: {
     width: 44,
@@ -699,7 +772,7 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 10,
   },
-  ratedToolItem: {
+ ratedToolItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.cardBackground,
@@ -711,17 +784,39 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  ratedToolRank: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  ratedToolImageContainer: {
+    position: 'relative',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
+  },
+  ratedToolImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: theme.cardBackground,
+  },
+   ratingText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.accent,
+  },
+  rankBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: theme.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
+    borderWidth: 2,
+    borderColor: theme.background,
   },
-  rankNumber: {
-    fontSize: 14,
+  rankBadgeText: {
+    fontSize: 10,
     fontWeight: 'bold',
     color: '#ffffff',
   },
@@ -740,11 +835,6 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
   },
   ratedToolRating: {
     marginLeft: 10,
-  },
-  ratingText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.accent,
   },
   quickActionsContainer: {
     flexDirection: 'row',
@@ -786,6 +876,38 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
   ratedToolsContainer: {
     paddingHorizontal: 20,
     gap: 12,
+  },
+  clearSearchButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    backgroundColor: theme.secondary || theme.cardBackground,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  clearSearchText: {
+    fontSize: 12,
+    color: theme.primary,
+    fontWeight: '500',
+  },
+  searchGridRow: {
+    
+    gap: 10,
+    paddingHorizontal: 20,
+  },
+  viewMoreButton: {
+    marginTop: 15,
+    marginHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: theme.primary,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  viewMoreText: {
+    fontSize: 14,
+    color: '#ffffff',
+    fontWeight: '600',
   },
 });
 

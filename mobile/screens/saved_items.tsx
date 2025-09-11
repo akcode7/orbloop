@@ -22,6 +22,9 @@ import Button from '../components/buttons';
 import FilterButton from '../components/filterbtn';
 import CategoryModal from '../components/category_modal';
 import SortModal, { SortOption } from '../components/SortModal';
+import SearchIcon from '../src/assets/icons/search_icon';
+import BackIcon from '../src/assets/icons/back_icon';
+import BottomNavigation from '../components/bottom_navigation';
 import { useTheme, useIsDarkMode } from '../themes/colors';
 
 const { width } = Dimensions.get('window');
@@ -31,9 +34,17 @@ const cardWidth = (width - 60) / 3; // Following the memory pattern for 3-item l
 
 interface SavedAIToolsScreenProps {
   onBack?: () => void;
+  onNavigateToHome?: () => void;
+  onNavigateToExplore?: () => void;
+  onNavigateToLearn?: () => void;
 }
 
-const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
+const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ 
+  onBack,
+  onNavigateToHome,
+  onNavigateToExplore,
+  onNavigateToLearn,
+}) => {
   const [savedAITools, setSavedAITools] = useState<AITool[]>([
     // Demo saved tools - in a real app this would come from AsyncStorage or a database
     {
@@ -105,6 +116,7 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({ onBack }) => {
   const [viewLayout, setViewLayout] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<SortOption>('dateAdded');
   const [showSortModal, setShowSortModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('saved');
 
   const theme = useTheme();
   const isDarkMode = useIsDarkMode();
@@ -320,6 +332,30 @@ Choose from our curated collection of the best AI tools for productivity, creati
     );
   };
 
+  const handleTabPress = (tab: string) => {
+    setActiveTab(tab);
+    switch (tab) {
+      case 'home':
+        if (onNavigateToHome) {
+          onNavigateToHome();
+        }
+        break;
+      case 'explore':
+        if (onNavigateToExplore) {
+          onNavigateToExplore();
+        }
+        break;
+      case 'learn':
+        if (onNavigateToLearn) {
+          onNavigateToLearn();
+        }
+        break;
+      case 'saved':
+        // Already on saved screen
+        break;
+    }
+  };
+
  const renderAICard = ({ item }: { item: AITool }) => (
     <View style={[
       styles.cardContainer,
@@ -391,7 +427,7 @@ Choose from our curated collection of the best AI tools for productivity, creati
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <Text style={styles.backArrow}>←</Text>
+           <BackIcon width={18} height={18} fill={isDarkMode ? '#000000' : theme.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Saved AI Tools</Text>
         <TouchableOpacity style={styles.clearButton} onPress={handleClearAll}>
@@ -418,7 +454,9 @@ Choose from our curated collection of the best AI tools for productivity, creati
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
-          <Text style={styles.searchIcon}>🔍</Text>
+          <View style={styles.searchIconContainer}>
+            <SearchIcon width={16} height={16} fill={theme.textSecondary} />
+          </View>
           <TextInput
             style={styles.searchInput}
             placeholder="Search saved tools"
@@ -559,6 +597,12 @@ Choose from our curated collection of the best AI tools for productivity, creati
         onClose={() => setShowSortModal(false)}
         selectedSort={sortBy}
         onSelectSort={handleSelectSort}
+      />
+
+      {/* Bottom Navigation */}
+      <BottomNavigation
+        activeTab={activeTab}
+        onTabPress={handleTabPress}
       />
     </SafeAreaView>
   );
@@ -720,7 +764,7 @@ trendingBadge: {
     paddingHorizontal: 20,
     paddingVertical: 10,
   },
-  searchBar: {
+ searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.searchBackground,
@@ -730,10 +774,8 @@ trendingBadge: {
     borderWidth: 1,
     borderColor: theme.border,
   },
-  searchIcon: {
-    fontSize: 16,
+   searchIconContainer: {
     marginRight: 10,
-    color: theme.textSecondary,
   },
   searchInput: {
     flex: 1,
@@ -786,7 +828,7 @@ trendingBadge: {
   },
   listContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 100, // Account for bottom navigation
   },
   row: {
     justifyContent: 'space-between',
