@@ -11,6 +11,19 @@ import {
 } from 'react-native';
 import { categories, pricingFilters } from '../data/ai_toolsData';
 import { useTheme, useIsDarkMode } from '../themes/colors';
+import HomeIcon from '../src/assets/icons/home_icon';
+import TrendingIcon from '../src/assets/icons/trending_icon';
+import StarIcon from '../src/assets/icons/star_icon';
+import UserIcon from '../src/assets/icons/user_icon';
+import ContentWritingIcon from '../src/assets/icons/content_writing_icon';
+import DeveloperIcon from '../src/assets/icons/developer_icon';
+import CoursesIcon from '../src/assets/icons/courses_icon';
+import VideoEditingIcon from '../src/assets/icons/video_editing_icon';
+import PremiumIcon from '../src/assets/icons/premium_icon';
+import OpenSourceIcon from '../src/assets/icons/open_source';
+import FeaturedIcon from '../src/assets/icons/featured_icon';
+
+
 
 
 interface CategoryModalProps {
@@ -36,52 +49,119 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
   const isDarkMode = useIsDarkMode();
   const styles = createStyles(theme);
 
-  const renderCategoryItem = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={[
-        styles.categoryItem,
-        selectedCategory === item.id && styles.selectedCategoryItem
-      ]}
-      onPress={() => onSelectCategory(item.id)}
-    >
-      <View style={styles.categoryContent}>
-        <Text style={styles.categoryIcon}>{item.icon}</Text>
-        <View style={styles.categoryTextContainer}>
-          <Text style={[
-            styles.categoryName,
-            selectedCategory === item.id && styles.selectedCategoryText
-          ]}>
-            {item.name}
-          </Text>
-          <Text style={styles.categoryCount}>{item.count} tools</Text>
-        </View>
-      </View>
-      {selectedCategory === item.id && (
-        <Text style={styles.checkIcon}>✓</Text>
-      )}
-    </TouchableOpacity>
-  );
+  // Dynamic icon rendering functions
+  const getCategoryIcon = (categoryId: string, isSelected: boolean) => {
+    const iconColor = isSelected ? theme.primary : theme.text;
+    const iconSize = 22;
+    
+    switch (categoryId) {
+      case 'all':
+        return <HomeIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'trending':
+        return <TrendingIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'highest_rated':
+        return <StarIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'conversational':
+        return <UserIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'image':
+        return <ContentWritingIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'development':
+        return <DeveloperIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'audio':
+        return <CoursesIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'video':
+        return <VideoEditingIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'productivity':
+        return <FeaturedIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      default:
+        return <HomeIcon width={iconSize} height={iconSize} fill={iconColor} />;
+    }
+  };
 
-  const renderPricingItem = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={[
-        styles.pricingItem,
-        selectedPricing === item.id && styles.selectedPricingItem
-      ]}
-      onPress={() => onSelectPricing(item.id)}
-    >
-      <Text style={styles.pricingIcon}>{item.icon}</Text>
-      <Text style={[
-        styles.pricingName,
-        selectedPricing === item.id && styles.selectedPricingText
-      ]}>
-        {item.name}
-      </Text>
-      {selectedPricing === item.id && (
-        <Text style={styles.checkIcon}>✓</Text>
-      )}
-    </TouchableOpacity>
-  );
+  const getPricingIcon = (pricingId: string, isSelected: boolean) => {
+    const iconColor = isSelected ? theme.primary : theme.text;
+    const iconSize = 16;
+    
+    switch (pricingId) {
+      case 'all':
+        return <PremiumIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'free':
+        return <OpenSourceIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'freemium':
+        return <FeaturedIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'paid':
+        return <PremiumIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'opensource':
+        return <OpenSourceIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      default:
+        return <PremiumIcon width={iconSize} height={iconSize} fill={iconColor} />;
+    }
+  };
+
+
+
+ const renderCategoryItem = ({ item }: { item: any }) => {
+    const isSelected = selectedCategory === item.id;
+    
+    return (
+      <TouchableOpacity
+        style={[
+          styles.categoryItem,
+          isSelected && styles.selectedCategoryItem
+        ]}
+        onPress={() => onSelectCategory(item.id)}
+      >
+        <View style={styles.categoryContent}>
+          <View style={styles.categoryIcon}>
+            {getCategoryIcon(item.id, isSelected)}
+          </View>
+          <View style={styles.categoryTextContainer}>
+            <Text style={[
+              styles.categoryName,
+              isSelected && styles.selectedCategoryText
+            ]}>
+              {item.name}
+            </Text>
+            <Text style={styles.categoryCount}>{item.count} tools</Text>
+          </View>
+        </View>
+        {isSelected && (
+          <View style={styles.checkIconContainer}>
+            <StarIcon width={18} height={18} fill={theme.primary} />
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderPricingItem = ({ item }: { item: any }) => {
+    const isSelected = selectedPricing === item.id;
+    
+    return (
+      <TouchableOpacity
+        style={[
+          styles.pricingItem,
+          isSelected && styles.selectedPricingItem
+        ]}
+        onPress={() => onSelectPricing(item.id)}
+      >
+        <View style={styles.pricingIcon}>
+          {getPricingIcon(item.id, isSelected)}
+        </View>
+        <Text style={[
+          styles.pricingName,
+          isSelected && styles.selectedPricingText
+        ]}>
+          {item.name}
+        </Text>
+        {isSelected && (
+          <View style={styles.checkIconContainer}>
+            <StarIcon width={16} height={16} fill={theme.primary} />
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <Modal
@@ -237,11 +317,16 @@ const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  categoryIcon: {
-    fontSize: 22,
+ categoryIcon: {
     marginRight: 14,
     width: 30,
-    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+   checkIconContainer: {
+    marginLeft: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   categoryTextContainer: {
     flex: 1,
@@ -299,9 +384,10 @@ const createStyles = (theme: any) => StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  pricingIcon: {
-    fontSize: 16,
+   pricingIcon: {
     marginRight: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pricingName: {
     fontSize: 14,

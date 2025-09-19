@@ -201,9 +201,9 @@ const SavedAIToolsScreen: React.FC<SavedAIToolsScreenProps> = ({
   }, [searchText, selectedCategory, selectedPricing, sortBy, savedAITools]);
 
   // Handler functions
-  const handleCardPress = (aiTool: AITool) => {
+   const handleCardPress = (aiTool: AITool) => {
     setSelectedAI(aiTool);
-    setModalVisible(true);
+    setShowDetailScreen(true);
   };
 
   const handleViewDetail = () => {

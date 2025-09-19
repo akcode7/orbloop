@@ -8,6 +8,11 @@ import {
   Dimensions,
 } from 'react-native';
 import { useTheme, useIsDarkMode } from '../themes/colors';
+import SortAz from '../src/assets/icons/sort_a_toz';
+import StarIcon from '../src/assets/icons/star_icon';
+import CategoriesIcon from '../src/assets/icons/categories_icon';
+import TrendingIcon from '../src/assets/icons/trending_icon';
+import RecentIcon from '../src/assets/icons/recent_icon';
 
 const { width } = Dimensions.get('window');
 
@@ -30,14 +35,35 @@ const SortModal: React.FC<SortModalProps> = ({
   const isDarkMode = useIsDarkMode();
   const styles = createStyles(theme, isDarkMode);
 
-  const sortOptions = [
-    { id: 'name' as SortOption, name: 'Name (A-Z)', icon: '🔤', description: 'Alphabetical order' },
-    { id: 'rating' as SortOption, name: 'Highest Rated', icon: '⭐', description: 'Best ratings first' },
-    { id: 'category' as SortOption, name: 'Category', icon: '📁', description: 'Group by category' },
-    { id: 'trending' as SortOption, name: 'Trending First', icon: '🔥', description: 'Most popular tools' },
-    { id: 'dateAdded' as SortOption, name: 'Recently Added', icon: '📅', description: 'Newest tools first' },
-  ];
+  const getOptionIcon = (optionId: SortOption) => {
+    const iconSize = 20;
+    const iconColor = selectedSort === optionId 
+      ? (isDarkMode ? '#00ff88' : theme.primary)
+      : theme.text;
+    
+    switch (optionId) {
+      case 'name':
+        return <SortAz width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'rating':
+        return <StarIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'category':
+        return <CategoriesIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'trending':
+        return <TrendingIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'dateAdded':
+        return <RecentIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      default:
+        return <RecentIcon width={iconSize} height={iconSize} fill={iconColor} />;
+    }
+  };
 
+  const sortOptions = [
+    { id: 'name' as SortOption, name: 'Name (A-Z)', description: 'Alphabetical order' },
+    { id: 'rating' as SortOption, name: 'Highest Rated', description: 'Best ratings first' },
+    { id: 'category' as SortOption, name: 'Category', description: 'Group by category' },
+    { id: 'trending' as SortOption, name: 'Trending First', description: 'Most popular tools' },
+    { id: 'dateAdded' as SortOption, name: 'Recently Added', description: 'Newest tools first' },
+  ];
   const handleSelectSort = (sortOption: SortOption) => {
     onSelectSort(sortOption);
     onClose();
@@ -69,8 +95,10 @@ const SortModal: React.FC<SortModalProps> = ({
                 ]}
                 onPress={() => handleSelectSort(option.id)}
               >
-                <View style={styles.optionLeft}>
-                  <Text style={styles.optionIcon}>{option.icon}</Text>
+               <View style={styles.optionLeft}>
+                  <View style={styles.optionIconContainer}>
+                    {getOptionIcon(option.id)}
+                  </View>
                   <View style={styles.optionTextContainer}>
                     <Text style={[
                       styles.optionTitle,
@@ -156,15 +184,23 @@ const createStyles = (theme: any, isDarkMode: boolean) => StyleSheet.create({
     borderWidth: 2,
     borderColor: isDarkMode ? '#00ff88' : theme.primary,
   },
-  optionLeft: {
+    optionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+  },
+  optionIconContainer: {
+    width: 24,
+    height: 24,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   optionIcon: {
     fontSize: 20,
     marginRight: 12,
   },
+
   optionTextContainer: {
     flex: 1,
   },

@@ -20,6 +20,8 @@ import { aiToolsData } from '../data/ai_toolsData';
 import AICard from '../components/aicard';
 import BottomNavigation from '../components/bottom_navigation';
 import SearchIcon from '../src/assets/icons/search_icon';
+import StarIcon from '../src/assets/icons/star_icon';
+import UserIcon from '../src/assets/icons/user_icon';
 import { useTheme, useIsDarkMode } from '../themes/colors';
 
 interface HomeScreenProps {
@@ -271,11 +273,21 @@ Choose from our curated collection of the best AI tools for productivity, creati
         showsVerticalScrollIndicator={false}
       >
         {/* Header Section */}
+       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.headerLeft}>
               <Text style={styles.greeting}>OrbLoop</Text>
               <Text style={styles.subtitle}>Discover the latest AI tools</Text>
+            </View>
+            <View style={styles.headerRight}>
+              <TouchableOpacity 
+                style={styles.userButton} 
+                onPress={onNavigateToProfile}
+                activeOpacity={0.7}
+              >
+                <UserIcon width={30} height={30} fill={theme.text} />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -293,13 +305,15 @@ Choose from our curated collection of the best AI tools for productivity, creati
               onChangeText={setSearchText}
             />
           </View>
-
+          
+      </View>
         {/* Search Results Section - Show when searching */}
+
         {searchText.trim() && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <View>
-                <Text style={styles.sectionTitle}>🔍 Search Results</Text>
+                <Text style={styles.sectionTitle}>Search Results</Text>
                 <Text style={styles.sectionSubtitle}>
                   {getFilteredTools().length} tools found for "{searchText}"
                 </Text>
@@ -401,7 +415,7 @@ Choose from our curated collection of the best AI tools for productivity, creati
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View>
-              <Text style={styles.sectionTitle}>🆕 Latest Releases</Text>
+              <Text style={styles.sectionTitle}>Latest Releases</Text>
               <Text style={styles.sectionSubtitle}>Recently added AI tools</Text>
             </View>
             <TouchableOpacity 
@@ -426,7 +440,7 @@ Choose from our curated collection of the best AI tools for productivity, creati
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View>
-              <Text style={styles.sectionTitle}>⭐ Featured Tools</Text>
+              <Text style={styles.sectionTitle}>Featured Tools</Text>
               <Text style={styles.sectionSubtitle}>Top picks for you</Text>
             </View>
             <TouchableOpacity 
@@ -456,7 +470,7 @@ Choose from our curated collection of the best AI tools for productivity, creati
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View>
-              <Text style={styles.sectionTitle}>⭐ Highest Rated</Text>
+              <Text style={styles.sectionTitle}>Highest Rated</Text>
               <Text style={styles.sectionSubtitle}>Top-rated AI tools</Text>
             </View>
             <TouchableOpacity 
@@ -490,7 +504,10 @@ Choose from our curated collection of the best AI tools for productivity, creati
                   <Text style={styles.ratedToolCategory}>{tool.category}</Text>
                 </View>
                 <View style={styles.ratedToolRating}>
-                  <Text style={styles.ratingText}>⭐ {tool.rating}</Text>
+                  <View style={styles.ratingContent}>
+                    <StarIcon width={12} height={12} fill="#FFD700" />
+                    <Text style={styles.ratingText}> {tool.rating}</Text>
+                  </View>
                 </View>
               </TouchableOpacity>
             ))}
@@ -518,6 +535,14 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+
+  headerContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: theme.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.border,
   },
   header: {
     paddingHorizontal: 20,
@@ -563,19 +588,13 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
     fontSize: 16,
     color: theme.textSecondary,
   },
- searchContainer: {
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.cardBackground,
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    marginBottom: 20,
-    shadowColor: isDarkMode ? '#000' : '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderWidth: 1,
     borderColor: theme.border,
   },
@@ -688,6 +707,7 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
     textAlign: 'center',
   },
   section: {
+    marginTop: 20,
     marginBottom: 30,
   },
   sectionHeader: {
@@ -836,6 +856,10 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
   ratedToolRating: {
     marginLeft: 10,
   },
+  ratingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   quickActionsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
@@ -887,7 +911,7 @@ const createStyles = (theme: any, isDarkMode?: boolean) => StyleSheet.create({
   },
   clearSearchText: {
     fontSize: 12,
-    color: theme.primary,
+    color: theme.textOnPrimary,
     fontWeight: '500',
   },
   searchGridRow: {

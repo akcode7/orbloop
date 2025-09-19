@@ -10,6 +10,17 @@ import {
   Dimensions,
 } from 'react-native';
 import { useTheme, useIsDarkMode } from '../themes/colors';
+import CoursesIcon from '../src/assets/icons/courses_icon';
+import DeveloperIcon from '../src/assets/icons/developer_icon';
+import VideoEditingIcon from '../src/assets/icons/video_editing_icon';
+import PhotoEditIcon from '../src/assets/icons/photo_edit_icon';
+import ContentWritingIcon from '../src/assets/icons/content_writing_icon';
+import PromptIcon from '../src/assets/icons/prompt_icon';
+import PremiumIcon from '../src/assets/icons/premium_icon';
+import OpenSourceIcon from '../src/assets/icons/open_source';
+import TrendingIcon from '../src/assets/icons/trending_icon';
+import FeaturedIcon from '../src/assets/icons/featured_icon';
+import StarIcon from '../src/assets/icons/star_icon';
 
 interface CourseCategoryModalProps {
   visible: boolean;
@@ -34,25 +45,86 @@ const CourseCategoryModal: React.FC<CourseCategoryModalProps> = ({
   const isDarkMode = useIsDarkMode();
   const styles = createStyles(theme);
 
-  const categories = [
-    { id: 'All', name: 'All Categories', icon: '📚', count: 7 },
-    { id: 'Developers', name: 'Developers', icon: '💻', count: 2 },
-    { id: 'Video Editing', name: 'Video Editing', icon: '🎬', count: 2 },
-    { id: 'Photo Editing', name: 'Photo Editing', icon: '📸', count: 1 },
-    { id: 'Content Writing', name: 'Content Writing', icon: '✍️', count: 1 },
-    { id: 'Prompt Engineering', name: 'Prompt Engineering', icon: '🔗', count: 1 },
+ const categories = [
+    { 
+      id: 'All', 
+      name: 'All Categories', 
+      icon: <CoursesIcon width={22} height={22} fill={theme.text} />, 
+      count: 7 
+    },
+    { 
+      id: 'Developers', 
+      name: 'Developers', 
+      icon: <DeveloperIcon width={22} height={22} fill={theme.text} />, 
+      count: 2 
+    },
+    { 
+      id: 'Video Editing', 
+      name: 'Video Editing', 
+      icon: <VideoEditingIcon width={22} height={22} fill={theme.text} />, 
+      count: 2 
+    },
+    { 
+      id: 'Photo Editing', 
+      name: 'Photo Editing', 
+      icon: <PhotoEditIcon width={22} height={22} fill={theme.text} />, 
+      count: 1 
+    },
+    { 
+      id: 'Content Writing', 
+      name: 'Content Writing', 
+      icon: <ContentWritingIcon width={22} height={22} fill={theme.text} />, 
+      count: 1 
+    },
+    { 
+      id: 'Prompt Engineering', 
+      name: 'Prompt Engineering', 
+      icon: <PromptIcon width={22} height={22} fill={theme.text} />, 
+      count: 1 
+    },
   ];
+
 
   const filters = [
-    { id: 'All', name: 'All Courses', icon: '📋', description: 'Show all available courses' },
-    { id: 'Premium', name: 'Premium', icon: '💎', description: 'Premium content only' },
-    { id: 'Free', name: 'Free', icon: '🆓', description: 'Free courses only' },
-    { id: 'Trending', name: 'Trending', icon: '🔥', description: 'Popular right now' },
-    { id: 'Featured', name: 'Featured', icon: '⭐', description: 'Editor\'s choice' },
-    { id: 'Top Rated', name: 'Top Rated', icon: '🏆', description: 'Highest rated (4.7+)' },
+    { 
+      id: 'All', 
+      name: 'All Courses', 
+      icon: <CoursesIcon width={20} height={20} fill={theme.text} />, 
+      description: 'Show all available courses' 
+    },
+    { 
+      id: 'Premium', 
+      name: 'Premium', 
+      icon: <PremiumIcon width={20} height={20} fill={theme.text} />, 
+      description: 'Premium content only' 
+    },
+    { 
+      id: 'Free', 
+      name: 'Free', 
+      icon: <OpenSourceIcon width={20} height={20} fill={theme.text} />, 
+      description: 'Free courses only' 
+    },
+    { 
+      id: 'Trending', 
+      name: 'Trending', 
+      icon: <TrendingIcon width={20} height={20} fill={theme.text} />, 
+      description: 'Popular right now' 
+    },
+    { 
+      id: 'Featured', 
+      name: 'Featured', 
+      icon: <FeaturedIcon width={20} height={20} fill={theme.text} />, 
+      description: 'Editor\'s choice' 
+    },
+    { 
+      id: 'Top Rated', 
+      name: 'Top Rated', 
+      icon: <StarIcon width={20} height={20} fill={theme.text} />, 
+      description: 'Highest rated (4.7+)' 
+    },
   ];
 
-  const renderCategoryItem = ({ item }: { item: any }) => (
+ const renderCategoryItem = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={[
         styles.categoryItem,
@@ -61,7 +133,7 @@ const CourseCategoryModal: React.FC<CourseCategoryModalProps> = ({
       onPress={() => onSelectCategory(item.id)}
     >
       <View style={styles.categoryContent}>
-        <Text style={styles.categoryIcon}>{item.icon}</Text>
+        <View style={styles.categoryIcon}>{item.icon}</View>
         <View style={styles.categoryTextContainer}>
           <Text style={[
             styles.categoryName,
@@ -73,7 +145,9 @@ const CourseCategoryModal: React.FC<CourseCategoryModalProps> = ({
         </View>
       </View>
       {selectedCategory === item.id && (
-        <Text style={styles.checkIcon}>✓</Text>
+        <View style={styles.checkIconContainer}>
+          <StarIcon width={18} height={18} fill={theme.primary} />
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -87,7 +161,7 @@ const CourseCategoryModal: React.FC<CourseCategoryModalProps> = ({
       onPress={() => onSelectFilter(item.id)}
     >
       <View style={styles.filterContent}>
-        <Text style={styles.filterIcon}>{item.icon}</Text>
+        <View style={styles.filterIcon}>{item.icon}</View>
         <View style={styles.filterTextContainer}>
           <Text style={[
             styles.filterName,
@@ -99,7 +173,9 @@ const CourseCategoryModal: React.FC<CourseCategoryModalProps> = ({
         </View>
       </View>
       {selectedFilter === item.id && (
-        <Text style={styles.checkIcon}>✓</Text>
+        <View style={styles.checkIconContainer}>
+          <StarIcon width={18} height={18} fill={theme.primary} />
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -113,7 +189,7 @@ const CourseCategoryModal: React.FC<CourseCategoryModalProps> = ({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <View style={styles.header}>
+         <View style={styles.header}>
             <Text style={styles.headerTitle}>Course Categories & Filters</Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <Text style={styles.closeButtonText}>✕</Text>
@@ -255,16 +331,21 @@ const createStyles = (theme: any) => StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  checkIconContainer: {
+    marginLeft: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   categoryContent: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  categoryIcon: {
-    fontSize: 22,
+ categoryIcon: {
     marginRight: 14,
     width: 30,
-    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   categoryTextContainer: {
     flex: 1,
@@ -316,11 +397,11 @@ const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  filterIcon: {
-    fontSize: 20,
+ filterIcon: {
     marginRight: 14,
     width: 30,
-    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterTextContainer: {
     flex: 1,

@@ -22,8 +22,16 @@ import FilterButton from '../components/filterbtn';
 import CategoryModal from '../components/category_modal';
 import SortModal from '../components/SortModal';
 import SearchIcon from '../src/assets/icons/search_icon';
+import StarIcon from '../src/assets/icons/star_icon';
 import BottomNavigation from '../components/bottom_navigation';
 import { useTheme, useIsDarkMode } from '../themes/colors';
+import SavedIcon from '../src/assets/icons/saved_icon';
+import Flame from '../src/assets/icons/fire_icon';
+import OpenSourceIcon from '../src/assets/icons/open_source';
+import CategoriesIcon from '../src/assets/icons/categories_icon';
+import SortAz from '../src/assets/icons/sort_a_toz';
+import RecentIcon from '../src/assets/icons/recent_icon';
+import TrendingIcon from '../src/assets/icons/trending_icon';
 
 const { width } = Dimensions.get('window');
 
@@ -226,14 +234,23 @@ const AIListingScreen: React.FC<AIListingScreenProps> = ({
     setSortBy(sortOption);
   };
 
-  const getSortIcon = () => {
+    const getSortIcon = () => {
+    const iconSize = 14;
+    const iconColor = theme.text;
+    
     switch (sortBy) {
-      case 'name': return '🔤';
-      case 'rating': return '⭐';
-      case 'category': return '📁';
-      case 'trending': return '🔥';
-      case 'dateAdded': return '📅';
-      default: return '📅';
+      case 'name': 
+        return <SortAz width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'rating': 
+        return <StarIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'category': 
+        return <CategoriesIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'trending': 
+        return <TrendingIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      case 'dateAdded': 
+        return <RecentIcon width={iconSize} height={iconSize} fill={iconColor} />;
+      default: 
+        return <RecentIcon width={iconSize} height={iconSize} fill={iconColor} />;
     }
   };
 
@@ -269,19 +286,28 @@ const AIListingScreen: React.FC<AIListingScreenProps> = ({
         onPress={() => handleCardPress(item)}
         onSave={() => handleSave(item)}
       />
-      {item.isTrending && (
+           {item.isTrending && (
         <View style={styles.trendingBadge}>
-          <Text style={styles.trendingText}>🔥 Trending</Text>
+          <View style={styles.badgeContent}>
+            <Flame width={10} height={10} fill="#ffffff" />
+            <Text style={styles.trendingText}> Trending</Text>
+          </View>
         </View>
       )}
       {item.isOpenSource && (
         <View style={styles.openSourceBadge}>
-          <Text style={styles.openSourceText}>🔓 Open Source</Text>
+          <View style={styles.badgeContent}>
+            <OpenSourceIcon width={10} height={10} fill="#ffffff" />
+            <Text style={styles.openSourceText}> Open Source</Text>
+          </View>
         </View>
       )}
       {item.rating && (
         <View style={styles.ratingContainer}>
-          <Text style={styles.ratingText}>⭐ {item.rating}</Text>
+          <View style={styles.ratingContent}>
+            <StarIcon width={12} height={12} fill="#FFD700" />
+            <Text style={styles.ratingText}> {item.rating}</Text>
+          </View>
         </View>
       )}
     </View>
@@ -346,7 +372,7 @@ const AIListingScreen: React.FC<AIListingScreenProps> = ({
 
       {/* Saved Tools Section */}
       <TouchableOpacity style={styles.savedSection} onPress={onNavigateToSaved}>
-        <Text style={styles.bookmarkIcon}>🔖</Text>
+        <SavedIcon style={styles.customGap} width={15} height={15} fill={theme.text} />
         <Text style={styles.savedText} >Your Saved AI Tools</Text>
       </TouchableOpacity>
 
@@ -354,7 +380,6 @@ const AIListingScreen: React.FC<AIListingScreenProps> = ({
       <View style={styles.filterContainer}>
         <FilterButton
           title="Trending"
-          icon="🔥"
           isActive={showTrending}
           onPress={handleTrendingPress}
         />
@@ -369,7 +394,9 @@ const AIListingScreen: React.FC<AIListingScreenProps> = ({
           style={[styles.sortButton, sortBy !== 'dateAdded' && styles.sortButtonActive]}
           onPress={handleSortPress}
         >
-          <Text style={styles.sortIcon}>{getSortIcon()}</Text>
+          <View style={styles.sortIcon}>
+            {getSortIcon()}
+          </View>
           <Text style={styles.sortText}>Sort</Text>
         </TouchableOpacity>
       </View>
@@ -521,10 +548,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
   },
-  bookmarkIcon: {
-    fontSize: 18,
-    marginRight: 10,
-  },
+ 
   savedText: {
     fontSize: 16,
     fontWeight: '600',
@@ -544,6 +568,10 @@ const createStyles = (theme: any) => StyleSheet.create({
    listContainer: {
     paddingHorizontal: 15,
     paddingBottom: 100,
+  },
+
+  customGap:{
+    paddingHorizontal: 20,
   },
   row: {
     justifyContent: 'space-between',
@@ -588,6 +616,10 @@ const createStyles = (theme: any) => StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 8,
     zIndex: 1,
+  },
+  ratingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   ratingText: {
     fontSize: 10,
@@ -730,9 +762,14 @@ const createStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.primary + '20',
     borderColor: theme.primary,
   },
-  sortIcon: {
-    fontSize: 14,
+    sortIcon: {
     marginRight: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sortText: {
     fontSize: 14,

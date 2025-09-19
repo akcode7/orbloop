@@ -10,7 +10,12 @@ import {
 import { useTheme } from '../themes/colors';
 import { Course } from '../aitypes/course_type';
 import StarIcon from '../src/assets/icons/star_icon';
-import FireIcon from '../src/assets/icons/fire_icon';
+import PremiumIcon from '../src/assets/icons/premium_icon';
+import FeaturedIcon from '../src/assets/icons/featured_icon';
+import TrendingIcon from '../src/assets/icons/trending_icon';
+import RecentIcon from '../src/assets/icons/recent_icon';
+import CoursesIcon from '../src/assets/icons/courses_icon';
+
 
 interface CourseCardProps {
   course: Course;
@@ -23,19 +28,34 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onPress, cardWidth }) =
   const styles = createStyles(theme, cardWidth);
  
   // Function to get the highest priority badge
-  const getPrimaryBadge = () => {
+ const getPrimaryBadge = () => {
     if (course.premium) {
-      return { type: 'premium', text: '💎 Premium', style: styles.premiumBadge };
+      return { 
+        type: 'premium', 
+        icon: <PremiumIcon width={10} height={10} fill="#ffffff" />,
+        text: 'Premium', 
+        style: styles.premiumBadge 
+      };
     }
     if (course.featured) {
-      return { type: 'featured', text: '⭐ Featured', style: styles.featuredBadge };
+      return { 
+        type: 'featured', 
+        icon: <FeaturedIcon width={10} height={10} fill="#ffffff" />,
+        text: 'Featured', 
+        style: styles.featuredBadge 
+      };
     }
     if (course.trending) {
-      return { type: 'trending', text: '🔥 Trending', style: styles.trendingBadge };
+      return { 
+        type: 'trending', 
+        icon: <TrendingIcon width={10} height={10} fill="#ffffff" />,
+        text: 'Trending', 
+        style: styles.trendingBadge 
+      };
     }
     return null;
   };
- 
+
   const primaryBadge = getPrimaryBadge();
 
   return (
@@ -58,11 +78,15 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onPress, cardWidth }) =
           </View>
         )}
 
+         
          {/* Single badge positioned at top right */}
         {primaryBadge && (
           <View style={styles.badgeContainer}>
             <View style={primaryBadge.style}>
-              {primaryBadge.text}
+              <View style={styles.badgeContent}>
+                {primaryBadge.icon}
+                <Text style={styles.badgeText}>{primaryBadge.text}</Text>
+              </View>
             </View>
           </View>
         )}
@@ -78,15 +102,17 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onPress, cardWidth }) =
         <View style={styles.courseFooter}>
           <Text style={styles.courseCategory}>{course.category}</Text>
           <View style={styles.courseStats}>
-            <Text style={styles.courseDuration}>⏱️ {course.duration}</Text>
-            <Text style={styles.courseLessons}>📋 {course.lessons} lessons</Text>
+            <View style={styles.statItem}>
+              <RecentIcon width={11} height={11} fill={theme.textSecondary} />
+              <Text style={styles.courseDuration}>{course.duration}</Text>
+            </View>
           </View>
         </View>
         <TouchableOpacity
           style={styles.learnButton}
           onPress={() => onPress(course)}
         >
-          <Text style={styles.learnButton}>Learn Now</Text>
+          <Text style={styles.learnButtonText}>Learn Now</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -138,6 +164,16 @@ const createStyles = (theme: any, cardWidth?: number) => StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
     color: '#ffffff',
+  },
+  badgeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
  premiumBadge: {
     backgroundColor: '#9B59B6',
@@ -249,6 +285,11 @@ const createStyles = (theme: any, cardWidth?: number) => StyleSheet.create({
     borderRadius: 6, // Smaller border radius
     alignItems: 'center',
     marginTop: 'auto', // Push to bottom of card
+  },
+  learnButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

@@ -12,6 +12,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme, useIsDarkMode } from '../themes/colors';
 import { Course } from '../aitypes/course_type';
+import BackIcon from '../src/assets/icons/back_icon';
+import SavedIcon from '../src/assets/icons/saved_icon';
+import ShareIcon from '../src/assets/icons/share_icon';
+import CoursesIcon from '../src/assets/icons/courses_icon';
+import StarIcon from '../src/assets/icons/star_icon';
 
 interface LearnAIDetailedScreenProps {
   course?: Course;
@@ -26,24 +31,11 @@ const LearnAIDetailedScreen: React.FC<LearnAIDetailedScreenProps> = ({
   const isDarkMode = useIsDarkMode();
   const styles = createStyles(theme);
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Beginner':
-        return '#2ECC71';
-      case 'Intermediate':
-        return '#F39C12';
-      case 'Advanced':
-        return '#E74C3C';
-      default:
-        return theme.textSecondary;
-    }
-  };
-
   if (!course) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Article not found</Text>
+          <Text style={styles.errorText}>Lesson not found</Text>
           <TouchableOpacity style={styles.backButton} onPress={onBack}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
@@ -63,53 +55,65 @@ const LearnAIDetailedScreen: React.FC<LearnAIDetailedScreenProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={onBack}>
-            <Text style={styles.backArrow}>←</Text>
+            <BackIcon width={20} height={20} fill={theme.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Article</Text>
+          <Text style={styles.headerTitle}>Lesson</Text>
           <View style={styles.placeholder} />
         </View>
 
-        {/* Article Image */}
-        <Image source={{ uri: course.image }} style={styles.articleImage} />
+        {/* Lesson Image */}
+        <Image source={{ uri: course.image }} style={styles.lessonImage} />
 
-        {/* Article Content */}
-        <View style={styles.articleContainer}>
+        {/* Lesson Content */}
+        <View style={styles.lessonContainer}>
           {/* Title and Meta Info */}
           <View style={styles.titleSection}>
-            <Text style={styles.articleTitle}>{course.title}</Text>
+            <Text style={styles.lessonTitle}>{course.title}</Text>
             
             <View style={styles.metaRow}>
               <View style={[styles.difficultyBadge, { backgroundColor: getDifficultyColor(course.difficulty) }]}>
                 <Text style={styles.difficultyText}>{course.difficulty}</Text>
               </View>
-              <Text style={styles.readTime}>📖 {course.readTime}</Text>
-              <Text style={styles.category}>🏷️ {course.category}</Text>
+              <View style={styles.metaItem}>
+                <CoursesIcon width={14} height={14} fill={theme.textSecondary} />
+                <Text style={styles.readTime}>{course.readTime}</Text>
+              </View>
+              <View style={styles.metaItem}>
+                <StarIcon width={14} height={14} fill={theme.textSecondary} />
+                <Text style={styles.category}>{course.category}</Text>
+              </View>
             </View>
           </View>
 
-          {/* Article Description */}
-          <Text style={styles.articleDescription}>{course.description}</Text>
+          {/* Lesson Description */}
+          <Text style={styles.lessonDescription}>{course.description}</Text>
 
-          {/* Article Content */}
+          {/* Lesson Content */}
           <View style={styles.contentSection}>
-            <Text style={styles.articleContent}>{course.content}</Text>
+            <Text style={styles.lessonContent}>{course.content}</Text>
           </View>
 
           {/* Action Buttons */}
           <View style={styles.actionSection}>
             <TouchableOpacity style={styles.bookmarkButton}>
-              <Text style={styles.bookmarkButtonText}>🔖 Bookmark Article</Text>
+              <View style={styles.buttonContent}>
+                <SavedIcon width={16} height={16} fill={theme.text} />
+                <Text style={styles.bookmarkButtonText}>Bookmark Lesson</Text>
+              </View>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.shareButton}>
-              <Text style={styles.shareButtonText}>📤 Share Article</Text>
+              <View style={styles.buttonContent}>
+                <ShareIcon width={16} height={16} fill="#ffffff" />
+                <Text style={styles.shareButtonText}>Share Lesson</Text>
+              </View>
             </TouchableOpacity>
           </View>
 
-          {/* Related Articles Section */}
+          {/* Related Lessons Section */}
           <View style={styles.relatedSection}>
-            <Text style={styles.sectionTitle}>Related Articles</Text>
-            <Text style={styles.relatedPlaceholder}>More articles coming soon...</Text>
+            <Text style={styles.sectionTitle}>Related Lesson</Text>
+            <Text style={styles.relatedPlaceholder}>More Lessons coming soon...</Text>
           </View>
         </View>
       </ScrollView>
@@ -153,23 +157,33 @@ const createStyles = (theme: any) => StyleSheet.create({
   placeholder: {
     width: 40,
   },
-  articleImage: {
+  lessonImage: {
     width: '100%',
     height: 250,
     backgroundColor: theme.border,
   },
-  articleContainer: {
+  lessonContainer: {
     padding: 20,
   },
   titleSection: {
     marginBottom: 16,
   },
-  articleTitle: {
+  lessonTitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: theme.text,
     lineHeight: 36,
     marginBottom: 12,
+  },
+   buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   metaRow: {
     flexDirection: 'row',
@@ -197,7 +211,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.textSecondary,
     fontWeight: '500',
   },
-  articleDescription: {
+  lessonDescription: {
     fontSize: 18,
     color: theme.textSecondary,
     lineHeight: 26,
@@ -207,7 +221,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   contentSection: {
     marginBottom: 32,
   },
-  articleContent: {
+  lessonContent: {
     fontSize: 16,
     color: theme.text,
     lineHeight: 26,

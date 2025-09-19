@@ -60,7 +60,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           key={tab.id}
           style={[
             styles.tab,
-            activeTab === tab.id && { backgroundColor: theme.primaryLight }
+            activeTab === tab.id && { backgroundColor: theme.background }
           ]}
           onPress={() => onTabPress(tab.id)}
           activeOpacity={0.7}

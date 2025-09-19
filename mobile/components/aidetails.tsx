@@ -9,10 +9,12 @@ import {
   StatusBar,
   Linking,
   Alert,
+  Modal,
   useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AITool } from '../aitypes/ai_type';
+import StarIcon from '../src/assets/icons/star_icon';
 import { useTheme, useIsDarkMode } from '../themes/colors';
 
 interface AIDetailScreenProps {
@@ -32,6 +34,8 @@ const AIDetailScreen: React.FC<AIDetailScreenProps> = ({
   const [userRating, setUserRating] = useState<number>(0);
   const [hasRated, setHasRated] = useState<boolean>(false);
   const [isEditingRating, setIsEditingRating] = useState<boolean>(false);
+  const [showThankYouModal, setShowThankYouModal] = useState<boolean>(false);
+  const [thankYouMessage, setThankYouMessage] = useState<string>('');
   
  const handleVisitExternal = async () => {
     if (!aiTool.externalUrl) {
@@ -62,11 +66,8 @@ const AIDetailScreen: React.FC<AIDetailScreenProps> = ({
     }
     
     const action = userRating > 0 ? 'updated' : 'rated';
-    Alert.alert(
-      'Thank you!',
-      `You ${action} ${aiTool.name} to ${rating} star${rating !== 1 ? 's' : ''}`,
-      [{ text: 'OK' }]
-    );
+    setThankYouMessage(`You ${action} ${aiTool.name} to ${rating} star${rating !== 1 ? 's' : ''}!`);
+    setShowThankYouModal(true);
   };
 
   const handleEditRating = () => {
@@ -134,9 +135,12 @@ const AIDetailScreen: React.FC<AIDetailScreenProps> = ({
               )}
               {aiTool.rating && (
                 <View style={styles.officialRatingContainer}>
-                  <Text style={styles.officialRatingText}>
-                    ⭐ {aiTool.rating.toFixed(1)} (Official Rating)
-                  </Text>
+                  <View style={styles.officialRatingContent}>
+                    <StarIcon width={14} height={14} fill="#FFD700" />
+                    <Text style={styles.officialRatingText}>
+                      {aiTool.rating.toFixed(1)} (Official Rating)
+                    </Text>
+                  </View>
                 </View>
               )}
             </View>
@@ -250,6 +254,30 @@ const AIDetailScreen: React.FC<AIDetailScreenProps> = ({
          
         </View>
       </ScrollView>
+
+       {/* Custom Thank You Modal */}
+      <Modal
+        visible={showThankYouModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowThankYouModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Thank you!</Text>
+            </View>
+            <Text style={styles.modalMessage}>{thankYouMessage}</Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setShowThankYouModal(false)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 };
@@ -335,6 +363,11 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   officialRatingContainer: {
     marginTop: 4,
+  },
+  officialRatingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   officialRatingText: {
     fontSize: 14,
@@ -536,6 +569,53 @@ const createStyles = (theme: any) => StyleSheet.create({
   visitButtonText: {
     color: theme.textOnPrimary,
     fontSize: 18,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: theme.surface,
+    borderRadius: 20,
+    padding: 24,
+    margin: 20,
+    minWidth: 280,
+    maxWidth: 340,
+    shadowColor: theme.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: theme.text,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: theme.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: theme.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: theme.textOnPrimary,
+    fontSize: 16,
     fontWeight: '600',
   },
 });

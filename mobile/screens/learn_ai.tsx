@@ -15,9 +15,12 @@ import { useTheme, useIsDarkMode } from '../themes/colors';
 import BottomNavigation from '../components/bottom_navigation';
 import CourseCard from '../components/CourseCard';
 import FilterModal from '../components/FilterModal';
-import CourseCategoryModal from '../components/CourseCategoryModal';
+
 import SearchIcon from '../src/assets/icons/search_icon';
+import CategoriesIcon from '../src/assets/icons/categories_icon';
+import FilterIcon from '../src/assets/icons/filter_icon';
 import { Course } from '../aitypes/course_type';
+
 
 interface LearnAIScreenProps {
   onNavigateToHome?: () => void;
@@ -54,10 +57,8 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
       title: 'Creating Trending Videos with AI',
       description: 'Master the art of creating viral content using AI tools',
       duration: '25 min',
-      difficulty: 'Intermediate',
       image: 'https://via.placeholder.com/120x80/FF6B6B/FFFFFF?text=VIDEO',
       category: 'Video Editing',
-      lessons: 5,
       readTime: '25 min read',
       content: 'Learn to create viral content using modern AI tools and techniques...',
       featured: true,
@@ -70,13 +71,12 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
       title: 'Edit Photos Using AI',
       description: 'Professional photo editing techniques with AI assistance',
       duration: '20 min',
-      difficulty: 'Beginner',
       image: 'https://via.placeholder.com/120x80/4ECDC4/FFFFFF?text=PHOTO',
       category: 'Photo Editing',
-      lessons: 4,
+
       readTime: '20 min read',
       content: 'Professional photo editing techniques with AI assistance and tools...',
-      featured: false,
+      featured: true,
       trending: false,
       premium: false,
       rating: 4.6,
@@ -86,10 +86,8 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
       title: 'React Native Development',
       description: 'Build mobile apps with React Native and AI integration',
       duration: '45 min',
-      difficulty: 'Advanced',
       image: 'https://via.placeholder.com/120x80/9B59B6/FFFFFF?text=RN',
       category: 'Developers',
-      lessons: 8,
       readTime: '45 min read',
       content: 'Comprehensive guide to building mobile apps with React Native and AI...',
       featured: true,
@@ -102,10 +100,8 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
       title: 'AI Content Writing',
       description: 'Write engaging content with AI assistance and tools',
       duration: '30 min',
-      difficulty: 'Intermediate',
       image: 'https://via.placeholder.com/120x80/E67E22/FFFFFF?text=WRITE',
       category: 'Content Writing',
-      lessons: 6,
       readTime: '30 min read',
       content: 'Master the art of writing engaging content with AI assistance...',
       featured: false,
@@ -118,10 +114,8 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
       title: 'Advanced Prompt Techniques',
       description: 'Master advanced prompting strategies for better AI outputs',
       duration: '35 min',
-      difficulty: 'Advanced',
       image: 'https://via.placeholder.com/120x80/2ECC71/FFFFFF?text=PROMPT',
       category: 'Prompt Engineering',
-      lessons: 7,
       readTime: '35 min read',
       content: 'Advanced prompting strategies for better AI outputs and results...',
       featured: true,
@@ -134,10 +128,8 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
       title: 'Python for AI Development',
       description: 'Learn Python fundamentals for AI and machine learning',
       duration: '50 min',
-      difficulty: 'Intermediate',
       image: 'https://via.placeholder.com/120x80/3498DB/FFFFFF?text=PY',
       category: 'Developers',
-      lessons: 10,
       readTime: '50 min read',
       content: 'Python fundamentals for AI and machine learning development...',
       featured: false,
@@ -150,10 +142,8 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
       title: 'AI Video Effects',
       description: 'Add stunning AI-powered effects to your videos',
       duration: '28 min',
-      difficulty: 'Beginner',
       image: 'https://via.placeholder.com/120x80/E74C3C/FFFFFF?text=VFX',
       category: 'Video Editing',
-      lessons: 5,
       readTime: '28 min read',
       content: 'Learn to add stunning AI-powered effects to your videos...',
       featured: false,
@@ -325,11 +315,14 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
           contentContainerStyle={styles.categoryScrollContent}
         >
           {categories.map(renderCategoryTab)}
-          <TouchableOpacity
+         <TouchableOpacity
             style={styles.categoryModalButton}
             onPress={handleCategoryPress}
           >
-            <Text style={styles.categoryModalButtonText}>📋 More Categories</Text>
+            <View style={styles.buttonContent}>
+              <CategoriesIcon width={15} height={15} fill="#ffffff" />
+              <Text style={styles.categoryModalButtonText}>More Categories</Text>
+            </View>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -345,7 +338,10 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
               style={styles.filterModalButton}
               onPress={handleFilterPress}
             >
-              <Text style={styles.filterModalButtonText}>🔧 More Filters</Text>
+              <View style={styles.buttonContent}>
+                <FilterIcon width={12} height={12} stroke="#ffffff" />
+                <Text style={styles.filterModalButtonText}>More Filters</Text>
+              </View>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -392,15 +388,6 @@ const LearnAIScreen: React.FC<LearnAIScreenProps> = ({
         onSelectCategory={handleSelectCategory}
         selectedFilter={selectedFilter}
         selectedCategory={selectedCategory}
-      />
-
-      <CourseCategoryModal
-        visible={showCategoryModal}
-        onClose={handleCloseCategoryModal}
-        onSelectCategory={handleSelectCategory}
-        onSelectFilter={handleSelectFilter}
-        selectedCategory={selectedCategory}
-        selectedFilter={selectedFilter}
       />
     </SafeAreaView>
   );
@@ -459,6 +446,32 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.textSecondary,
     fontWeight: 'bold',
   },
+
+   buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  categoryModalButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 12,
+    borderRadius: 20,
+    backgroundColor: theme.primary,
+    borderWidth: 1,
+    borderColor: theme.primary,
+    shadowColor: theme.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  categoryModalButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+
   categoryContainer: {
     backgroundColor: theme.surface,
     borderBottomWidth: 1,
@@ -487,25 +500,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.text,
   },
   activeCategoryTabText: {
-    color: '#ffffff',
-  },
-  categoryModalButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 12,
-    borderRadius: 20,
-    backgroundColor: theme.primary,
-    borderWidth: 1,
-    borderColor: theme.primary,
-    shadowColor: theme.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  categoryModalButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
     color: '#ffffff',
   },
   filterContainer: {

@@ -237,6 +237,9 @@ if (currentScreen === 'allListings') {
         <ThemeProvider>
           <SavedAIToolsScreen 
             onBack={handleNavigateToHome}
+            onNavigateToHome={handleNavigateToHome}
+            onNavigateToExplore={handleNavigateToAllListings}
+            onNavigateToLearn={handleNavigateToLearn}
           />
         </ThemeProvider>
       </SafeAreaProvider>
